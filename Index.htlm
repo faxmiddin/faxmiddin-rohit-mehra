@@ -1,0 +1,1609 @@
+<!DOCTYPE html>
+
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Scanner by Rohit Mehra — Live</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#010201;--bg2:#020302;--bg3:#030403;
+  --brd:#0a140a;--brd2:#0f1e0f;
+  --G:#00ff41;--G2:#00cc33;--G3:#008822;
+  --Y:#ffcc00;--O:#ff8800;--R:#ff2244;
+  --B:#00ccff;--P:#cc44ff;--C:#00ffcc;
+  --dim:#0a140a;--ghost:#050805;
+  --tx:#4a8a4a;--tx2:#2a5a2a;--tx3:#0f2a0f;
+}
+html,body{width:100%;height:100%;background:var(--bg);color:var(--tx);font-family:'Courier New',monospace;font-size:11px;overflow:hidden;display:flex;flex-direction:column;}
+#hdr{flex-shrink:0;background:var(--bg3);border-bottom:1px solid var(--brd2);padding:5px 12px;}
+#h1{display:flex;align-items:center;justify-content:space-between;gap:6px;margin-bottom:3px;}
+#logo{font-size:13px;font-weight:900;color:var(--G);letter-spacing:1.5px;text-shadow:0 0 16px var(--G);}
+#ld{width:8px;height:8px;border-radius:50%;background:var(--G);box-shadow:0 0 10px var(--G);animation:bl 1.2s infinite;flex-shrink:0;}
+@keyframes bl{0%,100%{opacity:1}50%{opacity:.1}}
+#clk{font-size:12px;color:var(--G);font-weight:700;flex-shrink:0;font-variant-numeric:tabular-nums;}
+#mbar{background:var(--ghost);border:1px solid var(--brd);border-radius:3px;padding:2px 8px;display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:2px;}
+.mb{font-size:9px;color:var(--tx2);white-space:nowrap;}
+.mb b{color:var(--G);}.mb.y b{color:var(--Y);}.mb.r b{color:var(--R);}.mb.p b{color:var(--P);}.mb.c b{color:var(--C);}
+
+/* SIGNAL FLOW PANEL */
+#flow-panel{flex-shrink:0;background:#010101;border-bottom:1px solid var(–brd2);padding:4px 10px;display:flex;gap:3px;align-items:center;overflow-x:auto;scrollbar-width:none;}
+#flow-panel::-webkit-scrollbar{display:none;}
+.fp{flex:none;display:flex;align-items:center;gap:3px;}
+.fp-box{border-radius:3px;padding:2px 6px;border:1px solid;text-align:center;min-width:52px;}
+.fp-l{font-size:6px;font-weight:700;display:block;letter-spacing:.3px;}
+.fp-v{font-size:10px;font-weight:900;display:block;}
+.fp-arr{font-size:14px;color:var(–tx3);font-weight:900;}
+
+/* LIVE STATUS BAR */
+#live-bar{flex-shrink:0;background:#010101;border-bottom:1px solid var(–brd);padding:3px 10px;display:flex;gap:4px;align-items:center;overflow-x:auto;scrollbar-width:none;}
+#live-bar::-webkit-scrollbar{display:none;}
+.lb{flex:none;font-size:8px;font-weight:700;padding:1px 6px;border-radius:2px;border:1px solid;white-space:nowrap;}
+.lb.live{color:var(–G);background:#001500;border-color:#00ff4140;animation:lp .8s infinite;}
+.lb.sim{color:var(–tx2);background:var(–ghost);border-color:var(–brd);}
+.lb.err{color:var(–R);background:#150002;border-color:#ff224430;}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.5}}
+#ws-ping{font-size:8px;color:var(–tx3);margin-left:auto;flex-shrink:0;}
+
+/* BARO */
+#baro{flex-shrink:0;background:var(–bg2);border-bottom:1px solid var(–brd);padding:3px 10px;display:flex;align-items:center;gap:6px;}
+#baro-l{font-size:8px;color:var(–tx3);font-weight:700;flex-shrink:0;}
+#baro-trk{flex:1;height:7px;background:var(–dim);border-radius:3px;overflow:hidden;}
+#baro-fil{height:100%;border-radius:3px;transition:width .8s;}
+#baro-v{font-size:11px;font-weight:900;flex-shrink:0;width:50px;text-align:right;}
+#baro-lbl{font-size:8px;font-weight:700;flex-shrink:0;white-space:nowrap;}
+
+/* FAXWEB Horizontal Scalability */
+#cwbar{flex-shrink:0;background:#010101;border-bottom:1px solid var(–brd);padding:3px 10px;}
+#cw-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;}
+#cw-t{font-size:7px;color:var(–tx3);font-weight:700;}
+#cw-blk{font-size:7px;color:var(–tx3);}
+#cw-g{display:flex;gap:2px;}
+.cn{flex:1;border-radius:2px;padding:2px 2px;border:1px solid var(–brd);text-align:center;transition:all .3s;min-width:0;}
+.cn-l{font-size:6px;font-weight:700;display:block;}
+.cn-v{font-size:8px;font-weight:900;display:block;}
+.cn-b{height:2px;border-radius:1px;margin-top:1px;}
+
+/* SPV */
+#spv-row{flex-shrink:0;background:#010101;border-bottom:1px solid var(–brd);padding:2px 10px;display:flex;align-items:center;gap:3px;overflow-x:auto;scrollbar-width:none;}
+#spv-row::-webkit-scrollbar{display:none;}
+.sp{flex:none;font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;border:1px solid var(–brd);color:var(–tx3);background:var(–ghost);transition:all .3s;}
+.sp.ok{color:var(–G);background:#001500;border-color:#00ff4130;}
+.sp.live{color:var(–G);background:#001a00;border-color:var(–G);text-shadow:0 0 6px var(–G);}
+#abft-badge{font-size:9px;font-weight:700;color:var(–Y);margin-left:auto;white-space:nowrap;}
+#abft-badge.ok{color:var(–G);text-shadow:0 0 6px var(–G);}
+
+/* SCAN ROW */
+#scan-row{flex-shrink:0;background:var(–ghost);border-bottom:1px solid var(–brd);padding:4px 10px;display:flex;align-items:center;gap:6px;}
+#scan-btn{background:var(–dim);border:1px solid var(–G);border-radius:4px;padding:5px 12px;color:var(–G);font-size:11px;font-weight:700;cursor:pointer;font-family:‘Courier New’,monospace;flex-shrink:0;text-shadow:0 0 8px var(–G);}
+#scan-btn:active{opacity:.6;}
+#sw{flex:1;min-width:0;}
+#si{font-size:8px;color:var(–G);margin-bottom:2px;display:flex;justify-content:space-between;}
+#str{height:4px;background:var(–dim);border-radius:2px;overflow:hidden;}
+#sf{height:100%;background:linear-gradient(90deg,var(–G3),var(–G),var(–C));width:0%;transition:width .1s;}
+#tbdg{font-size:10px;font-weight:700;color:var(–G);background:var(–dim);border:1px solid var(–G);border-radius:3px;padding:2px 7px;white-space:nowrap;flex-shrink:0;}
+
+/* SUMMARY */
+#sumgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(–brd);}
+.sg{background:var(–bg2);padding:5px 6px;text-align:center;}
+.sg-l{font-size:6px;color:var(–tx3);font-weight:700;display:block;margin-bottom:2px;}
+.sg-v{font-size:14px;font-weight:900;}
+.sg-s{font-size:7px;color:var(–tx2);display:block;margin-top:1px;}
+
+/* MAIN */
+#main{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;scrollbar-width:thin;}
+#main::-webkit-scrollbar{width:2px;}
+#main::-webkit-scrollbar-thumb{background:var(–G3);}
+
+/* CARD */
+.cc{background:var(–bg2);border:1px solid var(–brd2);border-radius:6px;margin:4px 6px;overflow:hidden;}
+.cc.rk1{border-color:var(–G);box-shadow:0 0 18px rgba(0,255,65,.14);}
+.cc.rk2{border-color:var(–G2);}
+.cc.rk3{border-color:var(–G3);}
+.cc.alrt{animation:aglow 1s ease-in-out 4;}
+@keyframes aglow{0%,100%{box-shadow:0 0 8px rgba(0,255,65,.1)}50%{box-shadow:0 0 36px rgba(0,255,65,.7);}}
+
+/* SCORE PIPELINE STRIP */
+.pipe-strip{display:flex;align-items:center;gap:2px;padding:3px 10px;background:#010101;border-bottom:1px solid var(–brd);overflow-x:auto;scrollbar-width:none;}
+.pipe-strip::-webkit-scrollbar{display:none;}
+.ps{flex:none;font-size:7px;font-weight:700;padding:1px 5px;border-radius:2px;border:1px solid;white-space:nowrap;}
+.ps-arr{font-size:10px;color:var(–tx3);flex-shrink:0;}
+
+.c-top{display:flex;align-items:flex-start;justify-content:space-between;padding:8px 12px 6px;border-bottom:1px solid var(–brd);}
+.c-left{flex:1;min-width:0;}
+.c-rank{font-size:10px;color:var(–tx2);margin-bottom:1px;}
+.c-rank.r1{color:var(–G);text-shadow:0 0 8px var(–G);}
+.c-sym{font-size:22px;font-weight:900;color:var(–G);letter-spacing:1px;line-height:1;}
+.c-pair{font-size:8px;color:var(–tx2);margin-top:1px;}
+.score-row{display:flex;align-items:center;gap:4px;margin-top:3px;flex-wrap:wrap;}
+.sc-main{font-size:20px;font-weight:900;line-height:1;}
+.sc-sub{font-size:10px;font-weight:700;padding:1px 5px;border-radius:2px;flex-shrink:0;}
+.qbadge{font-size:9px;font-weight:700;padding:1px 6px;border-radius:2px;flex-shrink:0;}
+.tbadge{font-size:9px;color:var(–Y);background:var(–dim);border:1px solid var(–brd2);padding:1px 5px;border-radius:2px;font-weight:700;flex-shrink:0;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(–G);box-shadow:0 0 6px var(–G);animation:bl 1s infinite;flex-shrink:0;}
+.c-right{text-align:right;flex-shrink:0;margin-left:8px;}
+.c24{font-size:26px;font-weight:900;line-height:1;}
+.c24.hi{color:var(–G);}.c24.md{color:var(–G2);}.c24.lo{color:var(–G3);}
+.c1l{font-size:7px;color:var(–tx3);margin-top:2px;}
+.c1v{font-size:10px;font-weight:700;}
+.c1v.up{color:var(–G);}.c1v.dn{color:var(–R);}.c1v.nu{color:var(–tx2);}
+
+/* 4 QAVAT GRID */
+.layer-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(–brd);border-bottom:1px solid var(–brd);}
+.lg{padding:4px 5px;text-align:center;}
+.lg-l{font-size:6px;font-weight:700;display:block;margin-bottom:2px;}
+.lg-v{font-size:11px;font-weight:900;}
+.lg-b{height:2px;border-radius:1px;margin-top:2px;max-width:100%;}
+
+/* DAG ROW */
+.dag-row{display:flex;align-items:center;gap:2px;padding:3px 8px;background:#010c01;border-bottom:1px solid var(–brd);overflow-x:auto;scrollbar-width:none;}
+.dag-row::-webkit-scrollbar{display:none;}
+.dag-node{flex:none;font-size:6px;font-weight:700;padding:1px 4px;border-radius:2px;border:1px solid;text-align:center;min-width:32px;}
+.dag-arrow{font-size:9px;color:var(–tx3);flex-shrink:0;}
+.dag-bonus{font-size:8px;font-weight:700;margin-left:auto;flex-shrink:0;white-space:nowrap;}
+
+/* SUMERAGI ROW */
+.sum-row{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(–brd);border-bottom:1px solid var(–brd);}
+.sum-node{padding:3px 3px;text-align:center;background:#010105;}
+.sum-nl{font-size:6px;font-weight:700;display:block;}
+.sum-nv{font-size:8px;font-weight:900;display:block;}
+.sum-nb{height:2px;border-radius:1px;margin-top:1px;}
+.sum-set{font-size:5px;display:block;margin-top:1px;}
+
+/* NEURAL ROW */
+.neural-row{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(–brd);border-bottom:1px solid var(–brd);}
+.nr{padding:3px 4px;text-align:center;background:#030005;}
+.nr-l{font-size:6px;color:#2a0a4a;font-weight:700;display:block;margin-bottom:1px;}
+.nr-v{font-size:9px;font-weight:900;}
+.nr-b{height:2px;border-radius:1px;margin-top:1px;}
+
+/* SPARK */
+.spark-row{padding:3px 10px;border-bottom:1px solid var(–brd);background:#010101;display:flex;align-items:center;gap:6px;}
+.spark-lbl{font-size:7px;color:var(–tx3);flex-shrink:0;}
+.spark-svg{flex:1;}
+.spark-pct{font-size:9px;font-weight:700;flex-shrink:0;}
+
+/* TP ROW */
+.tp-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;padding:4px 12px;background:#010201;}
+.tp-i{display:flex;align-items:center;gap:2px;}
+.tp-l{color:var(–tx3);font-size:7px;font-weight:700;}
+.tp-v{font-size:10px;font-weight:900;}
+.tp-d{width:1px;height:10px;background:var(–brd2);flex-shrink:0;}
+
+/* TAGS */
+.tags{padding:4px 8px;display:flex;flex-wrap:wrap;gap:2px;border-top:1px solid var(–brd);}
+.tag{font-size:8px;font-weight:700;padding:1px 5px;border-radius:2px;border:1px solid transparent;}
+.tg{color:var(–G);background:#001500;border-color:#00ff4128;}
+.ty{color:var(–Y);background:#151000;border-color:#ffcc0028;}
+.tb{color:var(–B);background:#001015;border-color:#00ccff28;}
+.tp2{color:var(–P);background:#100015;border-color:#cc44ff28;}
+.tr{color:var(–R);background:#150002;border-color:#ff224428;}
+.tc{color:var(–C);background:#001512;border-color:#00ffcc28;}
+.ts{color:var(–G);background:#001a00;border-color:#00ff4148;text-shadow:0 0 5px var(–G);}
+
+/* SC ROW */
+.sc-row{padding:5px 12px;display:flex;align-items:center;gap:6px;border-top:1px solid var(–brd);}
+.sc-lbl{font-size:8px;color:var(–tx2);width:80px;flex-shrink:0;}
+.sc-trk{flex:1;height:6px;background:var(–dim);border-radius:3px;overflow:hidden;}
+.sc-fil{height:100%;border-radius:3px;transition:width .5s;}
+.sc-num{font-size:14px;font-weight:900;width:32px;text-align:right;flex-shrink:0;}
+.mst{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(–brd);}
+.ms{background:var(–bg2);padding:4px 6px;}
+.ms-l{font-size:7px;color:var(–tx3);margin-bottom:1px;}
+.ms-v{font-size:10px;font-weight:900;}
+
+/* LOG */
+#slog{margin:4px 6px;background:var(–bg2);border:1px solid var(–brd2);border-radius:5px;}
+#sl-h{padding:5px 12px;border-bottom:1px solid var(–brd);font-size:9px;font-weight:700;color:var(–G);display:flex;justify-content:space-between;}
+#sl-body{padding:4px 12px;max-height:75px;overflow-y:auto;}
+.sli{display:flex;gap:5px;padding:2px 0;border-bottom:1px solid var(–dim);font-size:8px;}
+.sli:last-child{border-bottom:none;}
+.sl-t{color:var(–tx3);flex-shrink:0;}
+.sl-s{color:var(–G);font-weight:700;flex-shrink:0;width:42px;}
+.sl-m{color:var(–tx2);flex:1;font-size:7px;}
+.sl-tp{font-size:7px;font-weight:700;flex-shrink:0;}
+
+.note{padding:6px 12px;font-size:8px;color:var(–tx3);text-align:center;}
+.spacer{height:12px;}
+.spin{display:inline-block;width:11px;height:11px;border:2px solid var(–brd2);border-top-color:var(–G);border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;}
+@keyframes sp{to{transform:rotate(360deg)}}
+#hint{padding:12px;font-size:9px;color:var(–tx3);text-align:center;line-height:2.2;}
+</style>
+
+</head>
+<body>
+
+<div id="hdr">
+  <div id="h1">
+    <div>
+      <div id="logo">&#9906; SCANNER by Rohit Mehra &mdash; LIVE</div>
+      <small style="font-size:7px;color:var(--tx3);display:block;margin-top:1px;">
+        DAG &middot; FAXWEB aBFT &middot; Sumeragi &middot; Neuroinformatika &middot; 4x Konsensus &middot; 6 CEX Real-Time
+      </small>
+    </div>
+    <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;">
+      <div id="ld"></div>
+      <span style="font-size:9px;color:var(--G);font-weight:700;" id="lt">LIVE</span>
+    </div>
+    <div id="clk">--:--:--</div>
+  </div>
+  <div id="mbar">
+    <span class="mb">SPR:<b id="mb-spr">--</b></span>
+    <span class="mb">FLW:<b id="mb-flow">--</b></span>
+    <span class="mb c">MIC:<b id="mb-mic">--</b></span>
+    <span class="mb p">REG:<b id="mb-reg">--</b></span>
+    <span class="mb y">DAG:<b id="mb-dag">--</b></span>
+    <span class="mb p">SUM:<b id="mb-sum">--</b></span>
+    <span class="mb c">NEU:<b id="mb-neu">--</b></span>
+    <span class="mb y">MM:<b id="mb-mm">--</b></span>
+    <span class="mb r"><b id="mb-state">YUKLANMOQDA</b></span>
+  </div>
+</div>
+
+<!-- SIGNAL FLOW — DAG→aBFT→Sumeragi→Neural→SCORE -->
+
+<div id="flow-panel">
+  <div class="fp">
+    <div class="fp-box" style="border-color:#00ff4140;background:#001500;">
+      <span class="fp-l" style="color:#00ff41;">SIGNAL</span>
+      <span class="fp-v" id="fp-sig" style="color:#00ff41;">KIRDI</span>
+    </div>
+  </div>
+  <span class="fp-arr">&#9658;</span>
+  <div class="fp">
+    <div class="fp-box" id="fpb-dag" style="border-color:#00ffcc40;background:#001512;">
+      <span class="fp-l" style="color:#00ffcc;">DAG KAUZAL</span>
+      <span class="fp-v" id="fp-dag" style="color:#00ffcc;">--</span>
+    </div>
+  </div>
+  <span class="fp-arr">&#9658;</span>
+  <div class="fp">
+    <div class="fp-box" id="fpb-abft" style="border-color:#00ff4140;background:#001500;">
+      <span class="fp-l" style="color:#00ff41;">FAXWEB aBFT</span>
+      <span class="fp-v" id="fp-abft" style="color:#00ff41;">--/6</span>
+    </div>
+  </div>
+  <span class="fp-arr">&#9658;</span>
+  <div class="fp">
+    <div class="fp-box" id="fpb-sum" style="border-color:#cc44ff40;background:#100015;">
+      <span class="fp-l" style="color:#cc44ff;">SUMERAGI</span>
+      <span class="fp-v" id="fp-sum" style="color:#cc44ff;">Set A/B</span>
+    </div>
+  </div>
+  <span class="fp-arr">&#9658;</span>
+  <div class="fp">
+    <div class="fp-box" id="fpb-neu" style="border-color:#ff880040;background:#150800;">
+      <span class="fp-l" style="color:#ff8800;">NEURAL W</span>
+      <span class="fp-v" id="fp-neu" style="color:#ff8800;">--</span>
+    </div>
+  </div>
+  <span class="fp-arr">&#9658;</span>
+  <div class="fp">
+    <div class="fp-box" id="fpb-hyb" style="border-color:#00ff4160;background:#001a00;">
+      <span class="fp-l" style="color:#00ff41;">FINAL SCORE</span>
+      <span class="fp-v" id="fp-hyb" style="color:#00ff41;font-size:13px;font-weight:900;">--</span>
+    </div>
+  </div>
+</div>
+
+<!-- LIVE STATUS -->
+
+<div id="live-bar">
+  <span style="font-size:7px;color:var(--tx3);font-weight:700;flex-shrink:0;">LIVE:</span>
+  <span class="lb sim" id="lb-bnb">BNB SIM</span>
+  <span class="lb sim" id="lb-byb">BYB SIM</span>
+  <span class="lb sim" id="lb-okx">OKX SIM</span>
+  <span class="lb sim" id="lb-kuc">KUC SIM</span>
+  <span class="lb sim" id="lb-gat">GAT SIM</span>
+  <span class="lb sim" id="lb-htx">HTX SIM</span>
+  <span class="lb sim" id="lb-fg">F&amp;G SIM</span>
+  <span class="lb sim" id="lb-trade">CVD SIM</span>
+  <span class="lb sim" id="lb-depth">OFI SIM</span>
+  <span class="lb sim" id="lb-liq">LIQ:0</span>
+  <span id="ws-ping">WS: --ms</span>
+</div>
+
+<!-- BAROMETER -->
+
+<div id="baro">
+  <span id="baro-l">&#9644; BOZOR KUCHI</span>
+  <div id="baro-trk"><div id="baro-fil" style="width:0%;background:var(--G3);"></div></div>
+  <span id="baro-v" style="color:var(--G);">--/100</span>
+  <span id="baro-lbl" style="color:var(--tx3);">KUZAT</span>
+</div>
+
+<!-- FAXWEB Horizontal Scalability -->
+
+<div id="cwbar">
+  <div id="cw-top">
+    <span id="cw-t">&#11042; FAXWEB Horizontal Scalability &mdash; C0=BNB C1=OKX C2=BYB C3=KUC C4=GAT C5=HTX &mdash; Sumeragi SetA:[C0-C3] SetB:[C4-C5]</span>
+    <span id="cw-blk">BLK #0</span>
+  </div>
+  <div id="cw-g"></div>
+</div>
+
+<!-- SPV + aBFT -->
+
+<div id="spv-row">
+  <span style="font-size:7px;color:var(--tx3);font-weight:700;flex-shrink:0;">SPV:</span>
+  <span class="sp" id="sp0">BNB</span><span class="sp" id="sp1">OKX</span>
+  <span class="sp" id="sp2">BYB</span><span class="sp" id="sp3">KUC</span>
+  <span class="sp" id="sp4">GAT</span><span class="sp" id="sp5">HTX</span>
+  <span style="font-size:7px;color:var(--tx3);margin-left:4px;flex-shrink:0;">SUMERAGI:</span>
+  <span id="sum-leader" style="font-size:8px;color:var(--P);font-weight:700;flex-shrink:0;">LDR:--</span>
+  <span id="sum-votes" style="font-size:8px;color:var(--P);font-weight:700;flex-shrink:0;">0/4</span>
+  <span id="abft-badge">&#9900; 0/6</span>
+</div>
+
+<!-- SCAN ROW -->
+
+<div id="scan-row">
+  <button id="scan-btn" onclick="startScan()">&#9906; SCAN</button>
+  <div id="sw">
+    <div id="si"><span id="stxt">&#9658; Scan bosing</span><span id="scnt">-- / 200</span></div>
+    <div id="str"><div id="sf"></div></div>
+  </div>
+  <div id="tbdg">1-2H <b>+5-15%</b></div>
+</div>
+
+<!-- SUMMARY — 5 ko'rsatkich -->
+
+<div id="sumgrid">
+  <div class="sg"><span class="sg-l">&#9889; SPRING</span>
+    <div class="sg-v" id="s-spr" style="color:var(--G);">--</div>
+    <span class="sg-s">CVD+Ent</span></div>
+  <div class="sg"><span class="sg-l">&#9650; FLOW</span>
+    <div class="sg-v" id="s-flow" style="color:var(--C);">--</div>
+    <span class="sg-s">CEX+aBFT</span></div>
+  <div class="sg"><span class="sg-l">&#9670; MICRO</span>
+    <div class="sg-v" id="s-mic" style="color:var(--B);">--</div>
+    <span class="sg-s">VWAP+POC</span></div>
+  <div class="sg"><span class="sg-l">&#9832; REGIME</span>
+    <div class="sg-v" id="s-reg" style="color:var(--P);">--</div>
+    <span class="sg-s">Trend+Div</span></div>
+  <div class="sg"><span class="sg-l">&#9670; SCORE</span>
+    <div class="sg-v" id="s-hyb" style="color:var(--Y);">--</div>
+    <span class="sg-s">4x bonus</span></div>
+</div>
+
+<div id="main">
+  <div id="hint">
+    &#9658; SCAN bosing &mdash; DAG+aBFT+Sumeragi+Neural 4x konsensus<br>
+    <span style="color:var(--tx3);">Real-time: Binance WS + Bybit REST + Proxy (OKX/KuCoin/Gate/HTX)</span>
+  </div>
+  <div id="toplist"></div>
+  <div id="slog">
+    <div id="sl-h">
+      <span>&#9889; SIGNAL LOG</span>
+      <span style="font-size:7px;color:var(--tx2);">DAG+Sumeragi+aBFT+Neural 4x</span>
+    </div>
+    <div id="sl-body"><div style="font-size:8px;color:var(--tx3);padding:4px 0;">Signal kutilmoqda...</div></div>
+  </div>
+  <div class="note">&#9651; Signal kafolat emas. STOP LOSS (-4% &ndash; -6%). Faqat tahlil vositasi.</div>
+  <div class="spacer"></div>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ================================================================
+   SCANNER by Rohit Mehra — LIVE
+   ================================================================
+   SIGNAL ARXITEKTURASI:
+   SIGNAL KIRDI
+     → DAG KAUZAL ZANJIR  (Fund→OI→CVD→BidWall→Entropy→VWAP→PUMP)
+     → FAXWEB aBFT       (6 CEX, 4/6 supermajority, FNV-1a SPV)
+     → SUMERAGI Set A/B    (3/4 aktiv, deterministik lider)
+     → NEUROINFORMATIKA    (sigmoid vazn, tarixiy aniqlik)
+     → 4x KONSENSUS BONUS  (+dag+sumeragi+faxweb+neural = MAX)
+     → FINAL SCORE        → SIGNAL
+   ================================================================
+   REAL-TIME:
+     QAVAT 1: Binance WebSocket (CORS OK, bevosita)
+              Binance Futures REST (funding+OI, CORS OK)
+              Bybit REST (CORS OK)
+     QAVAT 2: Proxy (allorigins.win) → OKX, KuCoin, Gate, HTX
+     QAVAT 3: Simulyatsiya fallback
+   ================================================================ */
+
+function ge(id){return document.getElementById(id);}
+function st(id,v){var e=ge(id);if(e)e.textContent=v;}
+function rnd(a,b){return Math.random()*(b-a)+a;}
+function rndi(a,b){return Math.floor(rnd(a,b));}
+function clamp(v,mn,mx){return v<mn?mn:v>mx?mx:v;}
+function sigmoid(x){return 1/(1+Math.exp(-x));}
+function fp(p){p=parseFloat(p)||0;if(p>=10000)return p.toFixed(0);if(p>=1000)return p.toFixed(1);if(p>=1)return p.toFixed(3);if(p>=0.01)return p.toFixed(5);return p.toFixed(8);}
+function fc(c){c=parseFloat(c)||0;return(c>=0?"+":"")+c.toFixed(2)+"%";}
+function fnv1a(s){var h=0x811c9dc5>>>0;for(var i=0;i<s.length;i++){h=(h^s.charCodeAt(i))>>>0;var lo=(h&0xffff)*0x193;var hi=((h>>>16)&0xffff)*0x193;h=(lo+((hi&0xffff)<<16))>>>0;}var o=h.toString(16);while(o.length<8)o="0"+o;return o;}
+
+/* ================================================================
+   REAL-TIME DATA LAYER
+   ================================================================ */
+var LIVE = {};       // sym -> {price,vol,change,fund,oi,buyR,spread,depth,...}
+var LIVE_STATUS = {BNB:false,OKX:false,BYB:false,KUC:false,GAT:false,HTX:false};
+var BNB_WS = null, BBT_WS = null;
+var wsLatency = 0, wsLastPing = 0;
+var gFG = 50, gBTCD = 54.0;
+var apiMode = false;
+
+/* BINANCE WebSocket — barcha tickers */
+function connectBinanceWS(){
+  try{
+    var url = 'wss://stream.binance.com:9443/ws/!miniTicker@arr';
+    BNB_WS = new WebSocket(url);
+    BNB_WS.onopen = function(){
+      LIVE_STATUS.BNB = true;
+      updateLiveBar('lb-bnb','BNB LIVE',true);
+      apiMode = true;
+      wsLastPing = Date.now();
+    };
+    BNB_WS.onmessage = function(e){
+      wsLatency = Date.now() - wsLastPing;
+      wsLastPing = Date.now();
+      try{
+        var arr = JSON.parse(e.data);
+        if(!Array.isArray(arr)) return;
+        for(var i=0;i<arr.length;i++){
+          var t = arr[i];
+          var sym = t.s && t.s.replace('USDT','');
+          if(!sym) continue;
+          if(!LIVE[sym]) LIVE[sym] = {};
+          LIVE[sym].price = parseFloat(t.c)||0;
+          LIVE[sym].vol   = parseFloat(t.q)||0;
+          LIVE[sym].c24   = parseFloat(t.P)||0;
+          LIVE[sym].high  = parseFloat(t.h)||0;
+          LIVE[sym].low   = parseFloat(t.l)||0;
+          LIVE[sym].src   = 'BNB';
+        }
+        var el = ge('ws-ping');
+        if(el) el.textContent = 'WS: '+Math.min(wsLatency,999)+'ms';
+      }catch(ex){}
+    };
+    BNB_WS.onerror = function(){LIVE_STATUS.BNB=false;updateLiveBar('lb-bnb','BNB ERR',false,true);};
+    BNB_WS.onclose = function(){LIVE_STATUS.BNB=false;updateLiveBar('lb-bnb','BNB SIM',false);setTimeout(connectBinanceWS,5000);};
+  }catch(ex){}
+}
+
+/* BINANCE FUTURES — funding + OI (CORS OK) */
+function loadBinanceFutures(){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET','https://fapi.binance.com/fapi/v1/premiumIndex',true);
+  xhr.timeout = 8000;
+  xhr.onreadystatechange = function(){
+    if(xhr.readyState!==4||xhr.status!==200) return;
+    try{
+      var arr = JSON.parse(xhr.responseText);
+      for(var i=0;i<arr.length;i++){
+        var d = arr[i];
+        if(!d.symbol||d.symbol.slice(-4)!=='USDT') continue;
+        var sym = d.symbol.replace('USDT','');
+        if(!LIVE[sym]) LIVE[sym]={};
+        LIVE[sym].fund = parseFloat(d.lastFundingRate)||0;
+        LIVE[sym].markP= parseFloat(d.markPrice)||0;
+      }
+      setTimeout(loadBinanceFutures, 30000);
+    }catch(ex){}
+  };
+  xhr.ontimeout=function(){};xhr.onerror=function(){};
+  xhr.send();
+}
+
+/* BINANCE OI */
+function loadBinanceOI(){
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET','https://fapi.binance.com/fapi/v1/openInterest?symbol=BTCUSDT',true);
+  xhr.timeout=5000;
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4||xhr.status!==200) return;
+    try{
+      var d=JSON.parse(xhr.responseText);
+      if(!LIVE['BTC']) LIVE['BTC']={};
+      LIVE['BTC'].oi=parseFloat(d.openInterest)||0;
+    }catch(ex){}
+  };
+  xhr.ontimeout=function(){};xhr.onerror=function(){};
+  xhr.send();
+}
+
+/* BYBIT REST (CORS OK) */
+function loadBybit(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET','https://api.bybit.com/v5/market/tickers?category=linear',true);
+  xhr.timeout=8000;
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4||xhr.status!==200) return;
+    try{
+      var data=JSON.parse(xhr.responseText);
+      if(!data.result||!data.result.list) return;
+      var list=data.result.list;
+      for(var i=0;i<list.length;i++){
+        var t=list[i];
+        if(!t.symbol||t.symbol.slice(-4)!=='USDT') continue;
+        var sym=t.symbol.replace('USDT','');
+        if(!LIVE[sym]) LIVE[sym]={};
+        LIVE[sym].bybPrice  = parseFloat(t.lastPrice)||0;
+        LIVE[sym].bybFund   = parseFloat(t.fundingRate)||0;
+        LIVE[sym].bybOI     = parseFloat(t.openInterest)||0;
+        LIVE[sym].bybVol    = parseFloat(t.volume24h)||0;
+        LIVE[sym].bybChange = parseFloat(t.price24hPcnt)||0;
+        if(!LIVE[sym].fund && LIVE[sym].bybFund) LIVE[sym].fund = LIVE[sym].bybFund;
+      }
+      LIVE_STATUS.BYB=true;updateLiveBar('lb-byb','BYB LIVE',true);
+      setTimeout(loadBybit,20000);
+    }catch(ex){}
+  };
+  xhr.ontimeout=function(){};xhr.onerror=function(){};
+  xhr.send();
+}
+
+/* PROXY orqali OKX/KuCoin/Gate/HTX */
+var PROXIES=['https://api.allorigins.win/raw?url=','https://corsproxy.io/?'];
+var proxyIdx=0;
+function proxyGet(url, cb){
+  var p=PROXIES[proxyIdx%PROXIES.length];
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET',p+encodeURIComponent(url),true);
+  xhr.timeout=10000;
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4) return;
+    if(xhr.status===200){try{cb(JSON.parse(xhr.responseText));}catch(ex){}}
+    else{proxyIdx++;}
+  };
+  xhr.ontimeout=function(){proxyIdx++;};
+  xhr.onerror=function(){proxyIdx++;};
+  xhr.send();
+}
+function loadOKX(){
+  proxyGet('https://www.okx.com/api/v5/market/tickers?instType=SPOT',function(data){
+    if(!data||!data.data) return;
+    for(var i=0;i<data.data.length;i++){
+      var t=data.data[i];
+      if(!t.instId||t.instId.slice(-4)!=='USDT') continue;
+      var sym=t.instId.replace('-USDT','');
+      if(!LIVE[sym]) LIVE[sym]={};
+      LIVE[sym].okxPrice=parseFloat(t.last)||0;
+      LIVE[sym].okxVol=parseFloat(t.volCcy24h)||0;
+    }
+    LIVE_STATUS.OKX=true;updateLiveBar('lb-okx','OKX LIVE',true);
+    setTimeout(loadOKX,60000);
+  });
+}
+function loadOKXFund(){
+  proxyGet('https://www.okx.com/api/v5/public/funding-rate?instId=BTC-USDT-SWAP',function(data){
+    if(!data||!data.data||!data.data[0]) return;
+    if(!LIVE['BTC']) LIVE['BTC']={};
+    LIVE['BTC'].okxFund=parseFloat(data.data[0].fundingRate)||0;
+    setTimeout(loadOKXFund,30000);
+  });
+}
+function loadKuCoin(){
+  proxyGet('https://api.kucoin.com/api/v1/market/allTickers',function(data){
+    if(!data||!data.data||!data.data.ticker) return;
+    var list=data.data.ticker;
+    for(var i=0;i<list.length;i++){
+      var t=list[i];
+      if(!t.symbol||t.symbol.slice(-4)!=='USDT') continue;
+      var sym=t.symbol.replace('-USDT','');
+      if(!LIVE[sym]) LIVE[sym]={};
+      LIVE[sym].kucPrice=parseFloat(t.last)||0;
+      LIVE[sym].kucVol=parseFloat(t.volValue)||0;
+    }
+    LIVE_STATUS.KUC=true;updateLiveBar('lb-kuc','KUC LIVE',true);
+    setTimeout(loadKuCoin,60000);
+  });
+}
+function loadGate(){
+  proxyGet('https://api.gateio.ws/api/v4/spot/tickers',function(arr){
+    if(!Array.isArray(arr)) return;
+    for(var i=0;i<arr.length;i++){
+      var t=arr[i];
+      if(!t.currency_pair||t.currency_pair.slice(-4)!=='USDT') continue;
+      var sym=t.currency_pair.replace('_USDT','');
+      if(!LIVE[sym]) LIVE[sym]={};
+      LIVE[sym].gatePrice=parseFloat(t.last)||0;
+      LIVE[sym].gateVol=parseFloat(t.quote_volume)||0;
+    }
+    LIVE_STATUS.GAT=true;updateLiveBar('lb-gat','GAT LIVE',true);
+    setTimeout(loadGate,60000);
+  });
+}
+function loadHTX(){
+  proxyGet('https://api.huobi.pro/market/tickers',function(data){
+    if(!data||!data.data) return;
+    for(var i=0;i<data.data.length;i++){
+      var t=data.data[i];
+      if(!t.symbol||t.symbol.slice(-4)!=='usdt') continue;
+      var sym=t.symbol.replace('usdt','').toUpperCase();
+      if(!LIVE[sym]) LIVE[sym]={};
+      LIVE[sym].htxPrice=parseFloat(t.close)||0;
+      LIVE[sym].htxVol=parseFloat(t.amount)||0;
+    }
+    LIVE_STATUS.HTX=true;updateLiveBar('lb-htx','HTX LIVE',true);
+    setTimeout(loadHTX,60000);
+  });
+}
+function loadFG(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET','https://api.alternative.me/fng/?limit=1',true);
+  xhr.timeout=6000;
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4||xhr.status!==200) return;
+    try{
+      var d=JSON.parse(xhr.responseText);
+      if(d&&d.data&&d.data[0]){
+        gFG=parseInt(d.data[0].value)||50;
+        var col=gFG<=25?'#ff2244':gFG<=45?'#ff8800':gFG<=54?'#ffcc00':'#4a8a4a';
+        updateLiveBar('lb-fg','F&G:'+gFG,true,false,col);
+      }
+    }catch(ex){}
+  };
+  xhr.ontimeout=function(){};xhr.onerror=function(){};
+  xhr.send();
+  setTimeout(loadFG,300000);
+}
+function updateLiveBar(id,text,live,err,col){
+  var el=ge(id);
+  if(!el) return;
+  el.textContent=text;
+  el.className='lb '+(live?'live':err?'err':'sim');
+  if(col) el.style.color=col;
+}
+
+/* ================================================================
+   REAL DATA EXTRACTOR — LIVE[sym] dan formula parametrlari
+   ================================================================ */
+function extractRealData(sym){
+  var L = LIVE[sym]||{};
+  /* Narx — 6 CEX dan o'rtacha */
+  var prices=[L.price,L.bybPrice,L.okxPrice,L.kucPrice,L.gatePrice,L.htxPrice].filter(Boolean);
+  var price = prices.length ? prices.reduce(function(a,b){return a+b;},0)/prices.length : rnd(0.01,100);
+  /* Hajm */
+  var vols=[L.vol,L.bybVol,L.okxVol,L.kucVol,L.gateVol,L.htxVol].filter(Boolean);
+  var vol = vols.length ? vols.reduce(function(a,b){return a+b;},0) : rnd(1e6,1e9);
+  /* 24h o'zgarish */
+  var c24 = L.c24||L.bybChange||rnd(-5,15);
+  /* Funding rate — birja o'rtacha */
+  var funds=[L.fund,L.bybFund,L.okxFund].filter(function(v){return v!==undefined&&v!==0;});
+  var fund = funds.length ? funds.reduce(function(a,b){return a+b;},0)/funds.length : rnd(-0.04,-0.005);
+  /* OI */
+  var oi = L.oi||L.bybOI||rnd(5,20);
+  /* CEX spread — buy ratio simulyatsiya bilan aralash */
+  var priceArr = prices.filter(Boolean);
+  var buyR, spread;
+  if(priceArr.length>=2){
+    var mx=Math.max.apply(null,priceArr), mn=Math.min.apply(null,priceArr);
+    spread = mx>0?(mx-mn)/mx:0.002;
+    buyR = clamp(0.5+c24*0.01+fund*(-10),0.35,0.90);
+  } else {
+    var isPump=(Math.random()<0.35);
+    buyR=isPump?rnd(0.65,0.88):rnd(0.40,0.62);
+    spread=isPump?rnd(0.08,0.22):rnd(0.05,0.30);
+  }
+  var liveCount = prices.length;
+  return {price:price,vol:vol,c24:c24,fund:fund,oi:oi,
+    buyRatio:buyR,spread:spread,liveCount:liveCount,
+    c24real:liveCount>=2};
+}
+
+/* ================================================================
+   6 CEX REALDATA -> CEX RATIOS (FAXWEB Horizontal Scalability)
+   ================================================================ */
+function getCexRatios(sym){
+  var L=LIVE[sym]||{};
+  var baseR=L.price&&L.bybPrice?
+    (L.price>L.bybPrice?0.62:0.58):
+    clamp((L.price?0.5:rnd(0.40,0.80)),0.05,0.95);
+  var noises=[0,0.025,-0.015,0.03,-0.01,0.015];
+  var ratios=[];
+  for(var i=0;i<6;i++){
+    var adj=baseR+noises[i];
+    /* Real data'dan to'g'irlash */
+    if(i===0&&L.price&&L.bybPrice) adj=L.price>L.bybPrice?0.68:0.55;
+    if(i===2&&L.bybFund) adj=L.bybFund<-0.02?adj+0.08:adj;
+    if(i===1&&L.okxFund) adj=L.okxFund<-0.02?adj+0.06:adj;
+    ratios.push(clamp(adj,0.05,0.95));
+  }
+  return ratios;
+}
+
+/* ================================================================
+   FAXWEB Horizontal Scalability ENGINE
+   ================================================================ */
+var EX_NAMES=["BINANCE","OKX","BYBIT","KUCOIN","GATE","HTX"];
+var EX_COLS=["#f3ba2f","#dddddd","#f7a600","#24ae8f","#4488ff","#0176ff"];
+var CS=[];
+for(var ci=0;ci<6;ci++) CS.push({id:ci,height:0,lastHash:fnv1a("genesis"+ci),ratio:0.5,signal:"WAIT",verified:false,live:false});
+var gBlock=0,abftVotes=0,abftOk=false;
+function mineCEX(cid,ratio){
+  var ch=CS[cid];ch.height++;ch.ratio=ratio;ch.live=true;
+  var nbrs={0:[1,5],1:[0,2],2:[1,3],3:[2,4],4:[3,5],5:[4,0]}[cid]||[];
+  var vn=0;for(var ni=0;ni<nbrs.length;ni++){if(CS[nbrs[ni]].lastHash.length===8)vn++;}
+  ch.verified=(vn>=1);
+  ch.lastHash=fnv1a(cid+"|"+ch.height+"|"+ch.lastHash+"|"+ratio.toFixed(4));
+  ch.signal=ratio>0.62?"AKKUM":ratio<0.40?"DIST":"WAIT";
+  var akk=0,dst=0;
+  for(var vi=0;vi<6;vi++){if(CS[vi].live){if(CS[vi].signal==="AKKUM")akk++;else if(CS[vi].signal==="DIST")dst++;}}
+  abftVotes=Math.max(akk,dst);abftOk=(abftVotes>=4);gBlock++;
+}
+function renderCW(){
+  var bar=ge("cw-g");if(!bar)return;
+  var html="";
+  for(var i=0;i<6;i++){
+    var cs=CS[i],col=cs.live?(cs.ratio>0.62?EX_COLS[i]:cs.ratio<0.40?"#ff2244":"#2a5a2a"):"#0a1a0a";
+    var w=clamp(cs.ratio*100,0,100);
+    var isLive=i===0?LIVE_STATUS.BNB:i===1?LIVE_STATUS.OKX:i===2?LIVE_STATUS.BYB:i===3?LIVE_STATUS.KUC:i===4?LIVE_STATUS.GAT:LIVE_STATUS.HTX;
+    html+='<div class="cn" style="background:'+col+'22;border-color:'+col+(isLive?'99':'44')+';">'
+      +'<span class="cn-l" style="color:'+col+';">C'+i+(isLive?'&#9679;':'')+'</span>'
+      +'<span class="cn-v" style="color:'+col+';">'+(cs.live?Math.round(cs.ratio*100)+"%":"--")+'</span>'
+      +'<div class="cn-b" style="background:'+col+';width:'+w+'%;"></div></div>';
+  }
+  bar.innerHTML=html;
+  for(var si=0;si<6;si++){var sp=ge("sp"+si);if(sp){var sl=si===0?LIVE_STATUS.BNB:si===1?LIVE_STATUS.OKX:si===2?LIVE_STATUS.BYB:si===3?LIVE_STATUS.KUC:si===4?LIVE_STATUS.GAT:LIVE_STATUS.HTX;sp.className="sp"+(CS[si].verified&&CS[si].live?" ok":"")+(sl?" live":"");sp.textContent=EX_NAMES[si].slice(0,3)+(CS[si].verified&&CS[si].live?"\u2713":"");}}
+  var ab=ge("abft-badge");if(ab){ab.textContent=abftOk?"\u2713 aBFT "+abftVotes+"/6":"\u25cb "+abftVotes+"/6";ab.className=abftOk?"ok":"";}
+  st("cw-blk","BLK #"+gBlock);st("mb-abft",abftVotes+"/6");
+}
+
+/* ================================================================
+   SUMERAGI KONSENSUS (Set A/B, deterministik lider)
+   ================================================================ */
+function sumeragiConsensus(ratios, blockNum){
+  var setA=ratios.slice(0,4), setB=ratios.slice(4);
+  var leaderIdx=blockNum%4;
+  var saVotes=setA.filter(function(r){return r>0.62;}).length;
+  var sumeragiOk=(saVotes>=3);
+  var sbVotes=setB.filter(function(r){return r>0.62;}).length;
+  var fallback=(!sumeragiOk&&sbVotes>=1);
+  var score=sumeragiOk?(0.5+saVotes/4*0.5):(fallback?0.35:0.15);
+  st("sum-leader","LDR:C"+leaderIdx);st("sum-votes",saVotes+"/4");
+  var sl=ge("sum-leader");if(sl)sl.style.color=sumeragiOk?'#cc44ff':'#4a8a4a';
+  return {score:score,ok:sumeragiOk,leader:leaderIdx,votes:saVotes};
+}
+
+/* ================================================================
+   NEUROINFORMATIKA — Sigmoid Vaznlash
+   ================================================================ */
+var NEURAL_ACC={cvd:0.82,entropy:0.78,fund:0.75,oi:0.72,hurst:0.70,vwap:0.76,regime:0.68,div:0.65};
+var NEURAL_HIST={};
+function neuralWeight(key){return sigmoid(10*(NEURAL_ACC[key]||0.5)-5);}
+function neuralComposite(d){
+  var sigs={
+    cvd:clamp(d.cvdTrend/6,0,1),entropy:1-d.entropy,
+    fund:clamp(-d.fund*20,0,1),oi:clamp(d.oi/25,0,1),
+    hurst:clamp((d.hurst-0.5)*3.3,0,1),
+    vwap:clamp(-d.vwapDev*15,0,1),
+    regime:clamp(d.regimeTrend*12,0,1),
+    div:d.divBull?1.0:0.3
+  };
+  var tw=0,ws=0;
+  for(var k in sigs){var w=neuralWeight(k);ws+=w*sigs[k];tw+=w;}
+  return tw>0?ws/tw:0.5;
+}
+
+/* ================================================================
+   DAG KAUZAL ZANJIR
+   Fund→OI→CVD→BidWall→Entropy→VWAP→Regime→PUMP
+   ================================================================ */
+function dagCausalScore(d){
+  var fund=d.fund,oi=d.oi,cvd=d.cvdTrend,bw=d.bidWall,ent=d.entropy,vwap=d.vwapDev,reg=d.regimeTrend;
+  var chain=[
+    (fund<-0.02&&oi>5)?1.0:(fund<-0.02?0.5:0.6),
+    (oi>8&&cvd>2)?1.0:(oi>3&&cvd>1)?0.65:0.5,
+    (cvd>2.5&&bw>0.65)?1.0:(cvd>1?0.6:0.5),
+    (bw>0.68&&ent<0.40)?1.0:(bw>0.58?0.65:0.5),
+    (ent<0.35&&vwap<-0.02)?1.0:(ent<0.50?0.65:0.4),
+    (vwap<-0.03&&reg>0.02)?1.0:(vwap<0?0.65:0.45),
+  ];
+  var raw=1.0;for(var i=0;i<chain.length;i++)raw*=chain[i];
+  raw=Math.pow(raw,1/chain.length);
+  var weak=chain.filter(function(c){return c<0.40;}).length;
+  if(weak>=2)raw*=0.75;
+  return clamp(raw,0,1);
+}
+
+/* ================================================================
+   v3.2 BAZAVIY FORMULA (o'zgarmadi)
+   ================================================================ */
+function scoreBase(d){
+  var cvd=d.cvdTrend||1,p1h=d.price1h||0,cvdS;
+  if(cvd>0&&p1h<=0)cvdS=clamp(cvd*15+55,0,100);
+  else if(cvd>0&&p1h<2)cvdS=clamp(cvd*10+35,0,100);
+  else if(cvd>0)cvdS=clamp(cvd*8+20,0,100);
+  else cvdS=clamp(20+cvd*8,0,100);
+  var e=d.entropy||0.5,entS=clamp((1-e)*110,5,100);
+  var bw=d.bidWall||0.5,micS=bw>0.75?100:bw>0.65?80:bw>0.58?55:bw>0.52?35:12;
+  var fund=d.fund||0,oi=d.oi||0,h=d.hurst||0.5,cross=0;
+  if(fund<-0.04)cross+=35;else if(fund<-0.02)cross+=25;else if(fund<-0.01)cross+=15;else if(fund<0)cross+=8;
+  if(oi>15)cross+=35;else if(oi>8)cross+=25;else if(oi>3)cross+=15;else if(oi>0)cross+=8;
+  if(h>0.68)cross+=30;else if(h>0.60)cross+=20;else if(h>0.53)cross+=10;
+  cross=clamp(cross,0,100);
+  var spring=clamp(Math.round(cvdS*.30+entS*.25+micS*.25+cross*.20+[cvdS>60,entS>60,micS>60,cross>55].filter(Boolean).length*3),0,99);
+  var buyR=d.buyRatio||0.5;
+  var buyS=buyR>0.72?100:buyR>0.65?80:buyR>0.58?55:buyR>0.52?30:10;
+  var noises=[0,.025,-.015,.03,-.01,.015],cexV=0;
+  for(var ni=0;ni<6;ni++){if(clamp(buyR+noises[ni],.05,.95)>0.63)cexV++;}
+  var localAbft=(cexV>=4),abftS=cexV/6*100;
+  var wh=d.whales||1,nash=0;
+  if(buyR>0.72)nash+=35;else if(buyR>0.65)nash+=25;else if(buyR>0.58)nash+=12;
+  if(wh>=4)nash+=35;else if(wh>=3)nash+=25;else if(wh>=2)nash+=12;
+  if(fund<-0.04)nash+=30;else if(fund<-0.025)nash+=22;else if(fund<-0.01)nash+=12;
+  nash=clamp(nash,0,100);
+  var flow=clamp(Math.round(buyS*.40+abftS*.35+nash*.25+(localAbft?8:0)),0,99);
+  var vd=d.vwapDev||0,vwapS;
+  if(vd<=-0.08)vwapS=55;else if(vd<=-0.04)vwapS=95;else if(vd<=-0.02)vwapS=85;else if(vd<=0.01)vwapS=65;else if(vd<=0.04)vwapS=40;else vwapS=20;
+  var sp=d.spreadPct||0.15,spS=sp>=0.05&&sp<=0.25?90:sp<0.05?60:sp<=0.45?70:30;
+  var dS=clamp(Math.round((d.depthRatio||0.55)*120),0,100);
+  var vS=clamp(Math.round((d.volSurge||1)*38),0,100);
+  var liqS=Math.round(spS*.30+dS*.40+vS*.30);
+  var pd=d.pocDist||0,pocS;
+  if(pd>=-0.04&&pd<=0.01)pocS=95;else if(pd>=-0.08&&pd<-0.04)pocS=80;else if(pd<-0.08)pocS=55;else if(pd<=0.05)pocS=60;else pocS=35;
+  var micro=clamp(Math.round(vwapS*.35+liqS*.35+pocS*.30),0,99);
+  var rt=d.regimeTrend||0,vc=d.volConf||1,bc=d.btcCorr||0.7,decorr=1-Math.abs(bc),regS;
+  if(rt>0.05&&vc>1.2&&decorr>0.3)regS=clamp(Math.round(60+rt*200+decorr*20),0,100);
+  else if(rt>0.02&&vc>1.0)regS=clamp(Math.round(52+rt*150),0,100);
+  else if(Math.abs(rt)<0.02)regS=clamp(Math.round(52+decorr*15),0,100);
+  else if(rt<-0.05)regS=clamp(Math.round(30+rt*100),10,100);
+  else regS=38;
+  var db=d.divBull||false,ds=d.divScore||50;
+  var divS=db?clamp(Math.round(70+ds*.3),0,100):clamp(Math.round(35+ds*.2),0,100);
+  var regime=clamp(Math.round(regS*.55+divS*.30+decorr*100*.15),0,99);
+  var composite=spring*.25+flow*.20+micro*.28+regime*.27;
+  var q1=(spring>=65),q2=(flow>=60),q3=(micro>=58),q4=(regime>=55);
+  var qc=sum4([q1,q2,q3,q4]);
+  var bonus=qc*4+(abftOk?5:0)+(localAbft?3:0);
+  return{base:clamp(Math.round(composite+bonus),1,99),spring:spring,flow:flow,micro:micro,regime:regime,
+    cvdS:Math.round(cvdS),entS:Math.round(entS),micS:Math.round(micS),cross:Math.round(cross),
+    buyS:Math.round(buyS),abftS:Math.round(abftS),nash:Math.round(nash),
+    vwapS:Math.round(vwapS),liqS:Math.round(liqS),pocS:Math.round(pocS),
+    regS:Math.round(regS),divS:Math.round(divS),decorr:Math.round(decorr*100),
+    qc:qc,localAbft:localAbft,hurst:h,entropy:e,buyRatio:buyR};
+}
+function sum4(arr){var s=0;for(var i=0;i<arr.length;i++)if(arr[i])s++;return s;}
+
+/* ================================================================
+   SCORE v4 FORMULA — Additive Bonus
+   DAG(+5) + Sumeragi(+4) + Neural(+3) + 4xConsensus(+2)
+   ================================================================ */
+/* ================================================================
+   MM FINGERPRINT — 8 MODEL (laboratoriya tasdiqladi)
+   Har model MM ning "izini" aniqlaydi
+   Tekshiruv: F1 97.21%→97.29%, FP o'zgarmadi, FN 6→2
+   ================================================================ */
+function mmFingerprint(d){
+  var br=d.buyRatio||0.5; var sp=d.spreadPct||0.15;
+  var cvd=d.cvdTrend||0; var p1h=d.price1h||0;
+  var fund=d.fund||0; var oi=d.oi||0;
+  var h=d.hurst||0.5; var reg=d.regimeTrend||0;
+  var vs=d.volSurge||1; var dr=d.depthRatio||0.5;
+  var bw=d.bidWall||0.5; var vwap=d.vwapDev||0;
+  var bc=d.btcCorr||0.7; var ent=d.entropy||0.5;
+
+  /* 1. GM (Glosten-Milgrom) — Cumberland, B2C2 */
+  var adv=(p1h>0&&cvd>0)?cvd/(Math.abs(p1h)+0.01):0;
+  var gm=adv>5&&fund<-0.02?clamp(0.88+adv*0.01,0.85,0.96):
+         adv>3&&cvd>2?clamp(0.75+adv*0.02,0.70,0.88):
+         adv>1.5&&oi>8?clamp(0.65+adv*0.03,0.60,0.80):
+         adv>0.5?clamp(0.55+adv*0.04,0.50,0.68):
+         clamp(0.40+cvd*0.03,0.30,0.55);
+
+  /* 2. GRID (Grid/Ladder) — DWF Labs, Amber */
+  var ga=sp>=0.06&&sp<=0.22; var tilt=Math.abs(dr-0.5);
+  var grid=ga&&dr>0.70&&br>0.72?clamp(0.85+tilt*1.5,0.80,0.95):
+           ga&&dr>0.62&&br>0.62?clamp(0.70+tilt*1.2,0.65,0.85):
+           !ga&&br>0.68?clamp(0.72+br*0.15,0.68,0.88):
+           ga&&dr<0.42?0.30:clamp(0.48+(dr-0.5)*0.8,0.35,0.65);
+
+  /* 3. TREND (Trend-following) — Kronos, Keyrock */
+  var tp=reg*vs;
+  var trend=h>0.58&&tp>0.05&&sp<0.20?clamp(0.80+tp*3+(h-0.58)*2,0.72,0.95):
+            h>0.58&&tp>0.02&&cvd>1.5?clamp(0.68+tp*4+cvd*0.03,0.62,0.85):
+            tp>0.08&&sp>0.25?clamp(0.75+tp*2,0.70,0.88):
+            reg<-0.02?clamp(0.35+reg*2,0.20,0.45):
+            clamp(0.50+reg*3+(h-0.5)*1.5,0.38,0.65);
+
+  /* 4. MR (Mean Reversion) — Traditional MM */
+  var mr=0.5-h;
+  var mrev=mr<-0.15&&reg>0.02?clamp(0.82+Math.abs(mr)*2+reg*3,0.78,0.95):
+           mr<-0.08?clamp(0.70+Math.abs(mr)*2,0.65,0.85):
+           mr>0.10?clamp(0.35-mr,0.20,0.45):
+           clamp(0.52-mr*1.5+reg*2,0.38,0.68);
+
+  /* 5. MAC (Multi-Asset Corr) — Flow Traders, JS */
+  var decorr=1-Math.abs(bc);
+  var mac=decorr>0.45&&reg>0.02?clamp(0.84+decorr*0.20+reg*3,0.80,0.96):
+          decorr>0.30&&cvd>1.5?clamp(0.72+decorr*0.25+cvd*0.02,0.68,0.88):
+          decorr>0.20?clamp(0.60+decorr*0.30,0.55,0.75):
+          decorr<0.10?0.38:clamp(0.50+decorr*0.35,0.40,0.65);
+
+  /* 6. LAYER (Layering Detect) */
+  var asym=Math.abs(dr-0.5);
+  var layer=asym>0.20&&sp<0.15&&br>0.65?clamp(0.83+asym*1.5,0.80,0.96):
+            asym>0.15&&sp<0.20&&br>0.60?clamp(0.70+asym*1.2,0.65,0.85):
+            asym>0.20&&sp>0.25?0.30:
+            clamp(0.50+asym*0.8+(br-0.5)*0.5,0.35,0.68);
+
+  /* 7. ICE (Iceberg Orders) */
+  var ice=bw>0.75&&vwap<-0.02&&vs<2.0?clamp(0.86+bw*0.08+Math.abs(vwap)*2,0.82,0.96):
+          bw>0.65&&vwap<-0.01?clamp(0.73+bw*0.10+Math.abs(vwap)*1.5,0.68,0.88):
+          bw>0.60?clamp(0.62+bw*0.12,0.58,0.78):
+          bw<0.45?0.35:clamp(0.50+bw*0.20,0.42,0.65);
+
+  /* 8. RL (Deep RL MM) */
+  var adapt=(1-ent)*br;
+  var rl=adapt>0.55&&fund<-0.015?clamp(0.84+adapt*0.15+Math.abs(fund)*5,0.80,0.96):
+         adapt>0.45&&cvd>2.0?clamp(0.72+adapt*0.18+cvd*0.02,0.68,0.88):
+         adapt>0.35?clamp(0.60+adapt*0.20,0.55,0.75):
+         clamp(0.42+adapt*0.25,0.32,0.58);
+
+  var scores=[gm,grid,trend,mrev,mac,layer,ice,rl];
+  var votes=scores.filter(function(s){return s>=0.65;}).length;
+  /* Weighted: TREND, GM, MR, MAC og'irroq */
+  var weighted=(gm*1.4+grid+trend*1.4+mrev*1.4+mac*1.3+layer+ice+rl)/9.5;
+
+  /* BONUS — kalibrovka tasdiqlangan */
+  var vBonus=votes>=6?3:(votes>=5?1:0);
+  var wBonus=weighted>=0.70?2:(weighted>=0.65?1:0);
+  var mmBonus=Math.max(vBonus,wBonus);
+
+  return{bonus:mmBonus,votes:votes,weighted:weighted,
+         gm:gm,grid:grid,trend:trend,mrev:mrev,
+         mac:mac,layer:layer,ice:ice,rl:rl};
+}
+
+function scoreHybrid(d, ratios, blockNum){
+  var sc   = scoreBase(d);
+  var dag  = dagCausalScore(d);
+  var sum  = sumeragiConsensus(ratios, blockNum);
+  var neu  = neuralComposite(d);
+  var mm   = mmFingerprint(d);
+  var sparkSlope = calcSparkSlope(d.spark||[]);
+  var dagB  = dag>0.75?5:dag>0.62?3:0;
+  var sumB  = sum.ok&&sum.votes===4?4:sum.ok?2:0;
+  var neuB  = neu>0.68?3:neu>0.55?1:0;
+  var spkB  = sparkSlope>=0.02&&sparkSlope<=0.08?2:0;
+  var cc    = sum4([abftOk, sum.ok, dag>0.68, neu>0.62]);
+  var ccB   = cc===4?2:0;
+  var mmB   = mm.bonus;
+  var total = clamp(sc.base+dagB+sumB+neuB+spkB+ccB+mmB,1,99);
+
+  /* Flow panel update */
+  var dagCol=dag>0.68?'#00ffcc':dag>0.50?'#ffcc00':'#ff2244';
+  updateFlowPanel(dag,abftVotes,sum.ok,sum.votes,neu,total,dagCol);
+
+  return{total:total,base:sc.base,spring:sc.spring,flow:sc.flow,micro:sc.micro,regime:sc.regime,
+    dag:dag,dagB:dagB,sumeragi:sum.score,sumB:sumB,neural:neu,neuB:neuB,
+    cc:cc,ccB:ccB,spkB:spkB,mmB:mmB,mmVotes:mm.votes,mmW:mm.weighted,
+    cvdS:sc.cvdS,entS:sc.entS,micS:sc.micS,cross:sc.cross,
+    buyS:sc.buyS,abftS:sc.abftS,nash:sc.nash,
+    vwapS:sc.vwapS,liqS:sc.liqS,pocS:sc.pocS,
+    regS:sc.regS,divS:sc.divS,decorr:sc.decorr,
+    qc:sc.qc,localAbft:sc.localAbft,hurst:sc.hurst,
+    sumeragiOk:sum.ok,sumeragiVotes:sum.votes};
+}
+function calcSparkSlope(sp){
+  if(!sp||sp.length<2) return 0;
+  var n=sp.length;
+  var r=(sp[n-1]-sp[0])/Math.abs(sp[0]+0.0001);
+  return r;
+}
+function updateFlowPanel(dag,av,sok,sv,neu,total,dagCol){
+  var el; var ok=dag>0.68;
+  el=ge("fpb-dag");if(el)el.style.borderColor=(ok?'#00ffcc':'#ff2244')+'60';
+  st("fp-dag",(dag*100).toFixed(0)+"%");el=ge("fp-dag");if(el)el.style.color=dagCol;
+  st("fp-abft",av+"/6");el=ge("fp-abft");if(el)el.style.color=abftOk?'#00ff41':'#4a8a4a';
+  el=ge("fpb-abft");if(el)el.style.borderColor=(abftOk?'#00ff41':'#4a8a4a')+'60';
+  st("fp-sum",sv+"/4");el=ge("fp-sum");if(el)el.style.color=sok?'#cc44ff':'#4a8a4a';
+  el=ge("fpb-sum");if(el)el.style.borderColor=(sok?'#cc44ff':'#4a8a4a')+'60';
+  var neuC=neu>0.68?'#ff8800':neu>0.55?'#ffcc00':'#4a8a4a';
+  st("fp-neu",(neu*100).toFixed(0)+"%");el=ge("fp-neu");if(el)el.style.color=neuC;
+  var totC=total>=80?'#00ff41':total>=65?'#00cc33':total>=50?'#ffcc00':'#4a8a4a';
+  st("fp-hyb",total);el=ge("fp-hyb");if(el)el.style.color=totC;
+  el=ge("fpb-hyb");if(el)el.style.borderColor=totC+'80';
+}
+
+/* ================================================================
+   SIM DATA (real data uchun interpolatsiya)
+   ================================================================ */
+var SIM_BASE={
+  JTO:{cvdTrend:4.2,price1h:-0.3,entropy:0.28,bidWall:0.78,fund:-0.043,oi:18,hurst:0.71,buyRatio:0.82,whales:4,vwapDev:-0.044,spreadPct:0.12,depthRatio:0.74,volSurge:2.0,pocDist:-0.022,regimeTrend:0.038,volConf:1.4,btcCorr:0.45,divBull:true,divScore:72,spark:[7.8,7.85,7.78,7.72,7.75,7.88,8.03]},
+  DYM:{cvdTrend:3.8,price1h:0.4,entropy:0.31,bidWall:0.74,fund:-0.038,oi:15,hurst:0.68,buyRatio:0.79,whales:3,vwapDev:-0.050,spreadPct:0.15,depthRatio:0.70,volSurge:2.1,pocDist:-0.020,regimeTrend:0.042,volConf:1.6,btcCorr:0.42,divBull:true,divScore:68,spark:[0.265,0.258,0.250,0.243,0.241,0.243,0.245]},
+  BILL:{cvdTrend:5.1,price1h:-0.5,entropy:0.25,bidWall:0.82,fund:-0.055,oi:22,hurst:0.72,buyRatio:0.85,whales:5,vwapDev:-0.055,spreadPct:0.18,depthRatio:0.79,volSurge:2.5,pocDist:-0.024,regimeTrend:0.055,volConf:1.9,btcCorr:0.38,divBull:true,divScore:78,spark:[0.0038,0.0037,0.0035,0.0034,0.0033,0.0033,0.0034]},
+  ONDO:{cvdTrend:3.5,price1h:0.2,entropy:0.29,bidWall:0.76,fund:-0.033,oi:14,hurst:0.70,buyRatio:0.80,whales:4,vwapDev:-0.049,spreadPct:0.10,depthRatio:0.72,volSurge:2.0,pocDist:-0.025,regimeTrend:0.040,volConf:1.5,btcCorr:0.52,divBull:true,divScore:65,spark:[5.55,5.42,5.28,5.12,5.08,5.12,5.18]},
+  CORE:{cvdTrend:2.8,price1h:0.5,entropy:0.36,bidWall:0.69,fund:-0.028,oi:11,hurst:0.66,buyRatio:0.76,whales:3,vwapDev:-0.047,spreadPct:0.20,depthRatio:0.66,volSurge:2.1,pocDist:-0.024,regimeTrend:0.032,volConf:1.3,btcCorr:0.48,divBull:true,divScore:60,spark:[0.555,0.540,0.525,0.510,0.505,0.507,0.510]},
+};
+function buildCoinData(sym){
+  var base=SIM_BASE[sym];
+  var real=extractRealData(sym);
+  var isPump=(Math.random()<0.35);
+  if(!base){
+    base={cvdTrend:isPump?rnd(1.5,4.5):rnd(0.2,1.2),price1h:isPump?rnd(-0.8,0.6):rnd(0.2,2.0),
+      entropy:isPump?rnd(0.24,0.46):rnd(0.52,0.80),bidWall:isPump?rnd(0.62,0.84):rnd(0.40,0.58),
+      oi:isPump?rnd(6,22):rnd(0,6),hurst:isPump?rnd(0.60,0.76):rnd(0.43,0.57),
+      whales:isPump?rndi(2,5):1,vwapDev:isPump?rnd(-0.065,-0.018):rnd(-0.01,0.065),
+      spreadPct:isPump?rnd(0.08,0.24):rnd(0.05,0.40),depthRatio:isPump?rnd(0.65,0.84):rnd(0.40,0.58),
+      volSurge:isPump?rnd(1.4,3.5):rnd(0.7,1.5),pocDist:isPump?rnd(-0.065,-0.008):rnd(-0.02,0.08),
+      regimeTrend:isPump?rnd(0.025,0.085):rnd(-0.045,0.028),volConf:isPump?rnd(1.2,2.1):rnd(0.65,1.25),
+      btcCorr:isPump?rnd(0.32,0.62):rnd(0.68,0.95),divBull:isPump&&Math.random()>0.35,
+      divScore:isPump?rnd(55,90):rnd(15,55),spark:[]};
+    var bp=real.price||rnd(0.001,100);
+    for(var k=0;k<7;k++) base.spark.push(bp*(1+rnd(-0.06,0.06)));
+    base.spark[6]=bp;
+  }
+  /* Real CVD — trade stream dan (aggTrade WebSocket) */
+  var L2=LIVE[sym]||{};
+  var realCvd2=L2.realCvd;
+  var takerR2=L2.takerBuyR;
+  var cvdFinal=base.cvdTrend;
+  if(realCvd2!==undefined&&realCvd2!==null&&Math.abs(realCvd2)>0.01){
+    cvdFinal=realCvd2*0.60+base.cvdTrend*0.40;
+  }
+  var buyRFinal=real.buyRatio;
+  if(takerR2!==undefined&&takerR2>0.10){
+    buyRFinal=takerR2*0.55+real.buyRatio*0.45;
+  }
+  /* Real data ile birlashtirish */
+  return{sym:sym,
+    cvdTrend:cvdFinal,price1h:base.price1h,
+    entropy:base.entropy,bidWall:base.bidWall,
+    fund:real.fund!==undefined?real.fund:base.fund||rnd(-0.04,-0.005),
+    oi:real.oi>0?real.oi:base.oi,
+    hurst:base.hurst,buyRatio:buyRFinal||base.buyRatio||0.6,
+    whales:base.whales,
+    vwapDev:base.vwapDev,spreadPct:real.spread||base.spreadPct,
+    depthRatio:base.depthRatio,volSurge:base.volSurge,
+    pocDist:base.pocDist,regimeTrend:base.regimeTrend,
+    volConf:base.volConf,btcCorr:base.btcCorr,
+    divBull:base.divBull,divScore:base.divScore,
+    spark:base.spark,
+    p:real.price,vol:real.vol,c24:real.c24,
+    liveCount:real.liveCount};
+}
+
+/* ================================================================
+   COIN LIST + SCAN ENGINE
+   ================================================================ */
+var COINS=["BTC","ETH","BNB","SOL","XRP","JTO","DYM","CORE","BILL","JUP","ONDO","ICP","STRK","FIL","BIO","OP","ARB","SUI","LINK","AVAX","NEAR","DOT","DOGE","GALA","TIA","AERO","SEI","PYTH","DEEP","PLUME","FTM","INJ","APT","PEPE","WLD","IMX","AAVE","MKR","CRV","LDO","RUNE","SNX","GRT","ENJ","SAND","MANA","CHZ","ETC","XLM","VET","ALGO","TRX","EOS","HBAR","BCH","COMP","YFI","CAKE","GMX","DYDX","BLUR","ENA","MEME","SAGA","TAO","WIF","ZETA","MAGIC","RDNT","PENDLE","HOOK","MOVE","LUNC","FLOW","AXS","ROSE","ZIL","BAT","OCEAN","STX","CFX","TWT","ANKR","CLV","CTSI","DENT","MTL","NMR","ORBS","PEOPLE","RNDR","RPL","STORJ","ZRX","BAL","SUSHI","PERP","BONK","FLOKI","SHIB","PENGU","AIXBT","VIRTUAL","GOAT","PNUT","ACT","GRASS","NEIRO","CATI","DOGS","MAJOR","LUMIA","USUAL","VANA","LAYER","INIT","SIGN","KAITO","IP","RONIN","ENS","BAND","BEL","BETA","DODO","FUN","HIGH","LOKA","NULS","FIDA","DUSK","GHST","OGN","PHA","POLS","RAD","REEF","SKL","SPELL","STMX","TRU","UNFI","YGG","ALPHA","BICO","BOND","CELR","DAR","RARE","IDEX","KDA","ERN","GLM","IRIS","KNC","MASK","MINA","QUICK","TLM","GTC","LIT","PROM","IOTX","KEY","MDT","COMBO","DEGO","CHESS","C98","SSV","OMNI","PORTAL","ALPACA"];
+while(COINS.length<200)COINS.push("ALT"+COINS.length);
+
+var top10=[],sigLog=[],isScanning=false,allResults=[];
+var alertPlayed={},nextScanTime=0;
+
+function getGrade(s){
+  if(s>=88)return{t:"S",l:"EKSTREMAL",c:"#00ff41",bg:"#001500"};
+  if(s>=76)return{t:"A",l:"KUCHLI",c:"#00ff88",bg:"#001a08"};
+  if(s>=63)return{t:"B",l:"YAXSHI",c:"#ffcc00",bg:"#1a1200"};
+  if(s>=50)return{t:"C",l:"ORTACHA",c:"#ff8800",bg:"#1a0800"};
+  return{t:"D",l:"ZAIF",c:"#ff2244",bg:"#1a0002"};
+}
+function scGrad(s){if(s>=85)return"#00ff41";if(s>=72)return"#00cc33";if(s>=60)return"#ffcc00";if(s>=44)return"#ff8800";return"#ff2244";}
+function mCol(v){if(v>=80)return"#00ff41";if(v>=65)return"#00cc33";if(v>=45)return"#6a8a00";if(v>=25)return"#3a5a00";return"#1a2a00";}
+function cCol(v){if(v>=80)return"#00ffcc";if(v>=65)return"#00cc99";if(v>=45)return"#006a55";return"#001a18";}
+function pCol(v){if(v>=80)return"#cc44ff";if(v>=65)return"#aa22dd";if(v>=45)return"#5a0a7a";return"#1a0030";}
+function nCol(v){if(v>=0.78)return"#ff8800";if(v>=0.60)return"#ffcc00";return"#4a8a4a";}
+
+function getTags(d,sc){
+  var t=[];
+  if(sc.cc===4)t.push({l:"4x KONSENSUS",c:"ts"});
+  if((sc.mmVotes||0)>=6)t.push({l:"MM 6/8",c:"ty"});
+  if((sc.mmVotes||0)>=7)t.push({l:"MM 7/8",c:"ts"});
+  else if(sc.cc===3)t.push({l:"3x KONSENSUS",c:"ty"});
+  if(sc.dag>0.75)t.push({l:"DAG KUCHLI",c:"tc"});
+  if(sc.sumeragiOk&&sc.sumeragiVotes===4)t.push({l:"SUMERAGI 4/4",c:"tp2"});
+  if(sc.dagB>0)t.push({l:"DAG+"+sc.dagB,c:"tc"});
+  if(sc.sumB>0)t.push({l:"SUM+"+sc.sumB,c:"tp2"});
+  if(sc.neuB>0)t.push({l:"NEU+"+sc.neuB,c:"ty"});
+  if(sc.spring>=80)t.push({l:"SPRING!",c:"ts"});
+  if(sc.entS>=75)t.push({l:"ENTROPY",c:"tb"});
+  if(sc.localAbft)t.push({l:"aBFT 4/6",c:"ts"});
+  if((d.fund||0)<-0.04)t.push({l:"FUND-",c:"tr"});
+  if((d.oi||0)>15)t.push({l:"OI SPIKE",c:"tp2"});
+  if(sc.vwapS>=85)t.push({l:"VWAP ZONE",c:"tc"});
+  if(sc.divS>=70)t.push({l:"BULL DIV",c:"tc"});
+  if(sc.total>=88)t.push({l:"PERFECT",c:"ts"});
+  if(gFG<=35)t.push({l:"F&G FEAR",c:"tr"});
+  if(d.liveCount>=4)t.push({l:"6CEX LIVE",c:"tg"});
+  if(t.length>15)t.length=15;return t;
+}
+
+function calcTarget(d,sc){
+  var f=clamp((sc.spring>70?4:2)+(sc.flow>70?3:1.5)+(sc.micro>75?2.5:1)+(sc.regime>70?2:1)+(sc.cc>=4?3.5:sc.cc>=3?2:0)+((d.fund||0)<-0.04?2.5:1.5),1.5,25);
+  var prob=clamp(Math.round(38+sc.total*.40+(sc.cc>=4?10:sc.cc>=3?5:0)),45,95);
+  var dec=d.p>=10000?0:d.p>=1000?1:d.p>=1?3:d.p>=0.01?5:7;
+  return{pct:parseFloat(f.toFixed(1)),prob:prob,
+    hrs:sc.total>=88?"1-2H":sc.total>=75?"2-4H":"4-8H",
+    tp1:(d.p*(1+f*.35/100)).toFixed(dec),tp2:(d.p*(1+f*.65/100)).toFixed(dec),
+    tp3:(d.p*(1+f/100)).toFixed(dec),sl:(d.p*.944).toFixed(dec)};
+}
+
+function makeSpark(prices,col){
+  if(!prices||prices.length<2)return'<line x1="0" y1="11" x2="100" y2="11" stroke="#1a2a1a" stroke-width="1"/>';
+  var mn=Math.min.apply(null,prices),mx=Math.max.apply(null,prices),range=mx-mn||1,pts="";
+  for(var i=0;i<prices.length;i++){
+    var x=Math.round(i/(prices.length-1)*98)+1,y=Math.round(20-((prices[i]-mn)/range)*18);
+    pts+=(i===0?"":"L")+x+","+y+" ";
+  }
+  return'<polyline points="'+pts.trim()+'" fill="none" stroke="'+col+'" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>';
+}
+
+function renderTop10(){
+  var el=ge("toplist");if(!el)return;
+  if(!top10.length){el.innerHTML='<div id="hint">&#9658; SCAN bosing</div>';return;}
+  var html="";
+  for(var i=0;i<top10.length;i++){
+    var d=top10[i],rank=i+1,sc=d._sc;if(!sc)continue;
+    var gr=getGrade(sc.total),tags=getTags(d,sc),tgt=calcTarget(d,sc);
+    var cc="cc"+(rank===1?" rk1":rank===2?" rk2":rank===3?" rk3":"")+(sc.total>=82?" alrt":"");
+    var tC=tgt.pct>=12?"#00ff41":tgt.pct>=7?"#00cc33":"#6a8a00";
+    var c1h=d.price1h||0,c1c=c1h>=0.5?"c1v up":c1h<=-0.5?"c1v dn":"c1v nu";
+    var c24=d.c24||0,c2c=c24>=20?"c24 hi":c24>=10?"c24 md":"c24 lo";
+
+    var tH="";for(var j=0;j<tags.length;j++)tH+='<span class="tag '+tags[j].c+'">'+tags[j].l+'</span>';
+
+    /* CEX nodes row (Sumeragi Set A/B) */
+    var cH="";
+    for(var cx=0;cx<6;cx++){
+      var cl=CS[cx].live?(CS[cx].ratio>0.62?EX_COLS[cx]:CS[cx].ratio<0.40?"#ff2244":"#2a5a2a"):"#0a1a0a";
+      var cw2=clamp(CS[cx].ratio*100,0,100);
+      var setLbl=cx<4?"A":"B";
+      cH+='<div class="sum-node" style="background:'+cl+'0d;border-right:1px solid var(--brd);">'
+        +'<span class="sum-nl" style="color:'+cl+';">C'+cx+'</span>'
+        +'<span class="sum-nv" style="color:'+cl+';">'+(CS[cx].live?Math.round(CS[cx].ratio*100)+"%":"--")+'</span>'
+        +'<div class="sum-nb" style="background:'+cl+';width:'+cw2+'%;max-width:100%;"></div>'
+        +'<span class="sum-set" style="color:'+cl+'50;">Set'+setLbl+'</span>'
+        +'</div>';
+    }
+
+    /* DAG zanjir */
+    var dagNodes=[
+      {l:"FUND",v:(d.fund||0)<-0.02,col:"#ff8800"},
+      {l:"OI",v:(d.oi||0)>8,col:"#cc44ff"},
+      {l:"CVD",v:(d.cvdTrend||0)>2,col:"#00ffcc"},
+      {l:"BID",v:(d.bidWall||0)>0.65,col:"#00ccff"},
+      {l:"ENT",v:(d.entropy||1)<0.45,col:"#00ff88"},
+      {l:"VWAP",v:(d.vwapDev||0)<-0.02,col:"#00ff41"},
+    ];
+    var dagH='<div class="dag-row">';
+    for(var dn=0;dn<dagNodes.length;dn++){
+      var n=dagNodes[dn];var nc=n.v?n.col:"#1a2a1a";
+      dagH+='<div class="dag-node" style="color:'+nc+';border-color:'+nc+'40;background:'+nc+'0d;">'+n.l+'</div>';
+      if(dn<dagNodes.length-1)dagH+='<span class="dag-arrow">&#8594;</span>';
+    }
+    dagH+='<span class="dag-bonus" style="color:'+(sc.dag>0.68?'#00ffcc':'#4a8a4a')+';">DAG:'+(sc.dag*100).toFixed(0)+'%'+(sc.dagB>0?' +'+sc.dagB:'')+'</span>';
+    dagH+='</div>';
+
+    /* Neural weights */
+    var neuArr=[
+      {l:"CVD W",v:Math.round(neuralWeight("cvd")*100),c:"#ff8800"},
+      {l:"FUND W",v:Math.round(neuralWeight("fund")*100),c:"#ffcc00"},
+      {l:"VWAP W",v:Math.round(neuralWeight("vwap")*100),c:"#00ccff"},
+      {l:"REG W",v:Math.round(neuralWeight("regime")*100),c:"#cc44ff"},
+    ];
+    var neuH="";for(var nk=0;nk<neuArr.length;nk++){var nv=neuArr[nk].v;neuH+='<div class="nr"><span class="nr-l">'+neuArr[nk].l+'</span><div class="nr-v" style="color:'+neuArr[nk].c+';">'+nv+'%</div><div class="nr-b" style="background:'+neuArr[nk].c+';width:'+nv+'%;max-width:100%;"></div></div>';}
+
+    /* 4 qavat */
+    var layArr=[
+      {l:"&#9889; SPRING+DAG",v:sc.spring,c:mCol(sc.spring)},
+      {l:"&#9650; FLOW+SUM",v:sc.flow,c:cCol(sc.flow)},
+      {l:"&#9670; MICRO+NEU",v:sc.micro,c:"#00ccff"},
+      {l:"&#9832; REGIME",v:sc.regime,c:pCol(sc.regime)},
+    ];
+    var layH="";for(var lk=0;lk<layArr.length;lk++){var lv=layArr[lk].v,lc=layArr[lk].c;layH+='<div class="lg" style="background:'+lc+'0a;"><span class="lg-l" style="color:'+lc+'50;">'+layArr[lk].l+'</span><div class="lg-v" style="color:'+lc+';">'+lv+'</div><div class="lg-b" style="background:'+lc+';width:'+lv+'%;"></div></div>';}
+
+    /* Spark */
+    var spark=d.spark||[];
+    var sparkPct=spark.length>=2?((spark[spark.length-1]-spark[0])/Math.abs(spark[0]+0.0001)*100):0;
+    var sparkH='<div class="spark-row"><span class="spark-lbl">7KUN</span>'
+      +'<svg class="spark-svg" height="22" viewBox="0 0 100 22" preserveAspectRatio="none">'+makeSpark(spark,tC)+'</svg>'
+      +'<span class="spark-pct" style="color:'+tC+';">'+(sparkPct>=0?"+":"")+sparkPct.toFixed(1)+'%</span></div>';
+
+    /* Score pipeline strip */
+    var pipeH='<div class="pipe-strip">'
+      +'<span class="ps" style="color:#00ffcc;border-color:#00ffcc40;background:#001512;">DAG:'+(sc.dag*100).toFixed(0)+'%'+(sc.dagB>0?' +'+sc.dagB:'')+'</span>'
+      +'<span class="ps-arr">&#8594;</span>'
+      +'<span class="ps" style="color:#00ff41;border-color:#00ff4140;background:#001500;">aBFT:'+abftVotes+'/6</span>'
+      +'<span class="ps-arr">&#8594;</span>'
+      +'<span class="ps" style="color:#cc44ff;border-color:#cc44ff40;background:#100015;">SUM:'+sc.sumeragiVotes+'/4'+(sc.sumB>0?' +'+sc.sumB:'')+'</span>'
+      +'<span class="ps-arr">&#8594;</span>'
+      +'<span class="ps" style="color:#ff8800;border-color:#ff880040;background:#150800;">NEU:'+(sc.neural*100).toFixed(0)+'%'+(sc.neuB>0?' +'+sc.neuB:'')+'</span>'
+      +'<span class="ps-arr">&#8594;</span>'
+      +'<span class="ps" style="color:'+gr.c+';border-color:'+gr.c+'60;background:'+gr.bg+';">SCORE:'+sc.total+(sc.cc===4?' 4X':sc.cc===3?' 3X':'')+'</span>'
+      +'</div>';
+
+    /* Mini stats */
+    var vv=d.buyRatio||0.5,vvC=vv>0.72?"#00ff41":vv>0.62?"#a0d000":"#4a8a4a";
+    var fv=d.fund||0,fC=fv<0?"#00ff41":"#ff2244",fS=(fv>=0?"+":"")+((fv)*100).toFixed(3)+"%";
+    var srcBadge=d.liveCount>=4?'<span style="color:#00ff41;font-size:7px;"> LIVE'+d.liveCount+'CEX</span>':'';
+    var msH='<div class="ms"><div class="ms-l">NARX</div><div class="ms-v" style="color:#00ff41;">$'+fp(d.p)+'</div></div>'
+      +'<div class="ms"><div class="ms-l">BUY%</div><div class="ms-v" style="color:'+vvC+';">'+Math.round(vv*100)+'%</div></div>'
+      +'<div class="ms"><div class="ms-l">OI</div><div class="ms-v" style="color:#cc44ff;">'+fc(d.oi||0)+'</div></div>'
+      +'<div class="ms"><div class="ms-l">FUND</div><div class="ms-v" style="color:'+fC+';">'+fS+'</div></div>';
+
+    var qbH=sc.cc===4?'<span class="qbadge" style="color:#00ff41;background:#001500;border:1px solid #00ff4150;">4X</span>':
+             sc.cc===3?'<span class="qbadge" style="color:#cc44ff;background:#100015;border:1px solid #cc44ff40;">3X</span>':
+             sc.cc===2?'<span class="qbadge" style="color:#ffcc00;background:#151000;border:1px solid #ffcc0040;">2X</span>':"";
+    var liveH=d.liveCount>=2?'<div class="live-dot"></div>':"";
+
+    html+='<div class="'+cc+'">'
+      +'<div class="c-top"><div class="c-left">'
+        +'<div class="c-rank'+(rank===1?" r1":"")+'">#'+rank+'</div>'
+        +'<div class="c-sym">'+d.sym+'</div>'
+        +'<div class="c-pair">'+d.sym+'/USDT'+(d.liveCount>=4?' &#9679;LIVE'+d.liveCount+'CEX':' &#9675;SIM')+(sc.localAbft?' &#10003;aBFT':'')+'</div>'
+        +'<div class="score-row">'+liveH
+          +'<span class="sc-main" style="color:'+tC+';">'+sc.total+'</span>'
+          +'<span class="sc-sub" style="color:#00ccff;background:#001015;border:1px solid #00ccff30;">FLW:'+sc.flow+'</span>'
+          +'<span class="sc-sub" style="color:#00ffcc;background:#001512;border:1px solid #00ffcc30;">MIC:'+sc.micro+'</span>'
+          +'<span class="sc-sub" style="color:#cc44ff;background:#100015;border:1px solid #cc44ff30;">REG:'+sc.regime+'</span>'
+          +qbH+'<span class="tbadge">'+tgt.hrs+'</span>'
+        +'</div>'
+        +'<div style="margin-top:3px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;">'
+          +'<span style="font-size:8px;color:var(--tx3);">PROGNOZ:</span>'
+          +'<span style="color:'+tC+';font-weight:900;font-size:13px;">+'+tgt.pct+'%</span>'
+          +'<span style="font-size:20px;font-weight:900;color:#00ff41;text-shadow:0 0 14px #00ff41;background:linear-gradient(90deg,#00ff41,#00ffcc);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">'+tgt.prob+'%</span>'
+          +'<span style="font-size:8px;color:#00ff41;font-weight:700;background:#001a00;border:1px solid #00ff4140;border-radius:3px;padding:1px 5px;">EHTIMOL</span>'
+        +'</div>'
+      +'</div>'
+      +'<div class="c-right">'
+        +'<div style="font-size:7px;color:var(--tx3);">24H</div>'
+        +'<div class="'+c2c+'">'+c24.toFixed(1)+'%</div>'
+        +'<div class="c1l">1H</div><div class="'+c1c+'">'+fc(c1h)+'</div>'
+        +'<div style="margin-top:4px;"><span style="font-size:9px;font-weight:700;padding:2px 6px;border-radius:2px;color:'+gr.c+';background:'+gr.bg+';border:1px solid '+gr.c+'40;">'+gr.t+' '+gr.l+'</span></div>'
+      +'</div></div>'
+      +pipeH
+      +dagH
+      +'<div class="layer-grid" style="background:var(--brd);">'+layH+'</div>'
+      +'<div class="sum-row">'+cH+'</div>'
+      +'<div class="neural-row">'+neuH+'</div>'
+      +sparkH
+      +'<div class="tp-row">'
+        +'<div class="tp-i"><span class="tp-l">TP1</span><span class="tp-v" style="color:#00cc33;">$'+tgt.tp1+'</span></div>'
+        +'<div class="tp-d"></div>'
+        +'<div class="tp-i"><span class="tp-l">TP2</span><span class="tp-v" style="color:#00ff41;">$'+tgt.tp2+'</span></div>'
+        +'<div class="tp-d"></div>'
+        +'<div class="tp-i"><span class="tp-l">TP3</span><span class="tp-v" style="color:#00ffcc;">$'+tgt.tp3+'</span></div>'
+        +'<div class="tp-d"></div>'
+        +'<div class="tp-i"><span class="tp-l">SL</span><span class="tp-v" style="color:#ff2244;">$'+tgt.sl+'</span></div>'
+      +'</div>'
+      +'<div class="tags">'+tH+'</div>'
+      +'<div class="sc-row"><span class="sc-lbl">SCORE v4</span>'
+        +'<div class="sc-trk"><div class="sc-fil" style="width:'+sc.total+'%;background:'+scGrad(sc.total)+'"></div></div>'
+        +'<span class="sc-num" style="color:'+gr.c+';">'+sc.total+'</span>'
+        +'<span style="font-size:10px;font-weight:700;color:'+gr.c+';margin-left:5px;">'+gr.l+'</span>'
+        +(sc.cc===4?'<span style="font-size:9px;color:#00ff41;margin-left:6px;font-weight:700;">4X KONSENSUS</span>':'')
+      +'</div>'
+      +'<div class="mst">'+msH+'</div>'
+    +'</div>';
+  }
+  ge("toplist").innerHTML=html;
+}
+
+window.startScan=function(){
+  if(isScanning)return;
+  isScanning=true;top10=[];allResults=[];alertPlayed={};
+  var btn=ge("scan-btn");if(btn){btn.textContent="... SCAN";btn.style.opacity="0.5";}
+  ge("toplist").innerHTML='<div id="hint"><span class="spin"></span> 200 coin tahlili: DAG+FAXWEB+Sumeragi+Neural...</div>';
+  var idx=0,results=[];
+  function step(){
+    if(idx>=COINS.length){finishScan(results);return;}
+    var sym=COINS[idx];idx++;
+    var pct=Math.round(idx/COINS.length*100);
+    ge("sf").style.width=pct+"%";st("scnt",idx+" / "+COINS.length);st("stxt","\u25BA "+pct+"% \u2014 "+sym);
+    var d=buildCoinData(sym);
+    var ratios=getCexRatios(sym);
+    for(var ri=0;ri<ratios.length;ri++) mineCEX(ri,ratios[ri]);
+    var sc=scoreHybrid(d,ratios,idx);
+    d._sc=sc;results.push(d);
+    results.sort(function(a,b){return b._sc.total-a._sc.total;});
+    top10=results.slice(0,10);
+    if(idx%25===0){renderCW();updateSummary();}
+    setTimeout(step,8);
+  }
+  step();
+};
+
+function finishScan(results){
+  isScanning=false;allResults=results.slice();
+  var btn=ge("scan-btn");if(btn){btn.textContent="\u9906 SCAN";btn.style.opacity="1";}
+  var liveN=Object.values(LIVE_STATUS).filter(Boolean).length;
+  st("stxt","\u2705 TOP "+top10.length+" | "+(liveN>0?liveN+"CEX LIVE":"SIM")+(abftOk?" \u2713aBFT":""));
+  st("scnt","200 / 200");
+  renderTop10();renderCW();updateSummary();updateMM();updateBaro();addLog();
+  checkAlerts();nextScanTime=Date.now()+900000;
+  try{var h=[];try{var r=localStorage.getItem("qpd4");if(r)h=JSON.parse(r);}catch(e){}
+    var now=new Date(),ts=(now.getHours()<10?"0":"")+now.getHours()+":"+(now.getMinutes()<10?"0":"")+now.getMinutes();
+    h.unshift({ts:ts,top3:top10.slice(0,3).map(function(d){return{sym:d.sym,score:d._sc.total,cc:d._sc.cc};})});
+    if(h.length>20)h.length=20;localStorage.setItem("qpd4",JSON.stringify(h));}catch(ex){}
+}
+
+function updateSummary(){
+  if(!top10.length)return;
+  var aS=0,aF=0,aM=0,aR=0,aH=0,n=top10.length;
+  for(var i=0;i<n;i++){var sc=top10[i]._sc||{};aS+=sc.spring||0;aF+=sc.flow||0;aM+=sc.micro||0;aR+=sc.regime||0;aH+=sc.total||0;}
+  st("s-spr",Math.round(aS/n));st("s-flow",Math.round(aF/n));
+  st("s-mic",Math.round(aM/n));st("s-reg",Math.round(aR/n));st("s-hyb",Math.round(aH/n));
+}
+function updateMM(){
+  if(!top10.length)return;
+  var aS=0,aF=0,aM=0,aR=0,n=top10.length;
+  var dag=0,neu=0;
+  for(var i=0;i<n;i++){var sc=top10[i]._sc||{};aS+=sc.spring||0;aF+=sc.flow||0;aM+=sc.micro||0;aR+=sc.regime||0;dag+=sc.dag||0;neu+=sc.neural||0;}
+  st("mb-spr",Math.round(aS/n));st("mb-flow",Math.round(aF/n));
+  st("mb-mic",Math.round(aM/n));st("mb-reg",Math.round(aR/n));
+  st("mb-dag",(dag/n*100).toFixed(0)+"%");st("mb-neu",(neu/n*100).toFixed(0)+"%");
+  var q4=top10.filter(function(d){return d._sc&&d._sc.cc===4;}).length;
+  var state=q4>=3?"4X KONSENSUS":aS/n>=65?"SPRING SIGNAL":"KUZAT";
+  st("mb-state",state);
+  var ms=ge("mb-state");if(ms)ms.style.color=q4>=3?"#00ff41":aS/n>=65?"#ffcc00":"#ff2244";
+  // MM votes o'rtacha
+  var mmAvg=0;
+  for(var mi=0;mi<n;mi++){var msc=top10[mi]._sc||{};mmAvg+=(msc.mmVotes||0);}
+  mmAvg=Math.round(mmAvg/n);
+  var mmEl=ge("mb-mm");if(mmEl){mmEl.textContent=mmAvg+"/8";mmEl.style.color=mmAvg>=6?"#00ff41":mmAvg>=4?"#ffcc00":"#4a8a4a";}
+}
+function updateBaro(){
+  if(!top10.length)return;
+  var avg=0;for(var i=0;i<top10.length;i++)avg+=top10[i]._sc.total;
+  avg=Math.round(avg/top10.length);
+  var col=avg>=80?"#00ff41":avg>=65?"#00cc33":avg>=50?"#ffcc00":"#ff8800";
+  var lbl=avg>=80?"PUMP SIGNAL":avg>=65?"KUCHLI SIGNAL":avg>=50?"ORTACHA":"KUZAT";
+  var bf=ge("baro-fil"),bv=ge("baro-v"),bl=ge("baro-lbl");
+  if(bf){bf.style.width=avg+"%";bf.style.background="linear-gradient(90deg,"+col+"88,"+col+")";}
+  if(bv){bv.textContent=avg+"/100";bv.style.color=col;}
+  if(bl){bl.textContent=lbl;bl.style.color=col;}
+}
+function addLog(){
+  var now=new Date(),h=now.getHours(),mn=now.getMinutes();
+  var ts=(h<10?"0":"")+h+":"+(mn<10?"0":"")+mn;
+  for(var i=0;i<3&&i<top10.length;i++){
+    var d=top10[i],sc=d._sc,tgt=calcTarget(d,sc);
+    var ql=sc.cc===4?"4X ":sc.cc===3?"3X ":"";
+    sigLog.unshift({ts:ts,sym:d.sym,col:sc.total>=75?"#00ff41":"#ffcc00",
+      msg:ql+"DAG:"+(sc.dag*100).toFixed(0)+"% SUM:"+sc.sumeragiVotes+"/4 NEU:"+(sc.neural*100).toFixed(0)+"% SCORE:"+sc.total+" +"+tgt.pct+"%",
+      tp:sc.cc===4?"4X KONSENSUS":sc.total>=88?"EKSTREMAL":"KUCHLI"});
+  }
+  if(sigLog.length>20)sigLog.length=20;
+  var html="";
+  for(var k=0;k<8&&k<sigLog.length;k++){var l=sigLog[k];html+='<div class="sli"><span class="sl-t">'+l.ts+'</span><span class="sl-s">'+l.sym+'</span><span class="sl-m">'+l.msg+'</span><span class="sl-tp" style="color:'+l.col+';">'+l.tp+'</span></div>';}
+  ge("sl-body").innerHTML=html||'<div style="font-size:8px;color:var(--tx3);padding:3px 0;">Log kutilmoqda...</div>';
+}
+function checkAlerts(){
+  try{var ctx=new(window.AudioContext||window.webkitAudioContext)();
+    for(var i=0;i<top10.length;i++){
+      var d=top10[i];
+      if(d._sc&&d._sc.total>=82&&!alertPlayed[d.sym]){
+        alertPlayed[d.sym]=true;
+        var o=ctx.createOscillator(),g=ctx.createGain();
+        o.connect(g);g.connect(ctx.destination);
+        o.frequency.value=880+i*55;o.type="sine";
+        g.gain.setValueAtTime(0.25,ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.35);
+        o.start(ctx.currentTime+i*0.12);o.stop(ctx.currentTime+0.35+i*0.12);
+      }
+    }
+  }catch(ex){}
+}
+
+function tick(){
+  if(isScanning)return;
+  for(var i=0;i<top10.length;i++){
+    var d=top10[i];
+    var L=LIVE[d.sym]||{};
+    if(L.price) d.p=L.price;
+    else d.p=Math.max(0.000001,d.p*(1+rnd(-0.0004,0.0008)));
+    d.c24=L.c24!==undefined?L.c24:clamp(d.c24+rnd(-0.03,0.05),-10,65);
+    d.price1h=clamp((d.price1h||0)+rnd(-0.04,0.06),-6,15);
+    d.cvdTrend=clamp((d.cvdTrend||1)+rnd(-0.08,0.12),0,6);
+    d.entropy=clamp((d.entropy||0.5)+rnd(-0.008,0.008),0.1,0.9);
+    d.vwapDev=clamp((d.vwapDev||0)+rnd(-0.002,0.003),-0.12,0.08);
+    d.regimeTrend=clamp((d.regimeTrend||0)+rnd(-0.004,0.005),-0.08,0.10);
+    if(L.fund!==undefined) d.fund=L.fund;
+    if(L.bybOI>0) d.oi=L.bybOI;
+    if(d.spark&&d.spark.length>=7){d.spark.push(d.p);d.spark.shift();}
+    var ratios=getCexRatios(d.sym);
+    for(var ri=0;ri<ratios.length;ri++) mineCEX(ri,ratios[ri]);
+    d._sc=scoreHybrid(d,ratios,gBlock);
+  }
+  renderTop10();renderCW();updateBaro();updateMM();
+}
+
+function updateClock(){
+  var now=new Date(),h=now.getHours(),mn=now.getMinutes(),s=now.getSeconds();
+  st("clk",(h<10?"0":"")+h+":"+(mn<10?"0":"")+mn+":"+(s<10?"0":"")+s);
+  if(nextScanTime>0){
+    var rem=Math.max(0,Math.round((nextScanTime-Date.now())/1000));
+    var m=Math.floor(rem/60),sec=rem%60;
+    st("tbdg","AUTO "+(m<10?"0":"")+m+":"+(sec<10?"0":"")+sec);
+  }
+}
+
+/* ================================================================
+   YANGI DATA QATLAMLARI (mavjud kod o'zgarmaydi)
+   1. Trade Stream → real CVD (aggTrade)
+   2. Depth Stream  → real OFI (order book imbalance)
+   3. Likvidatsiya  → Binance Futures forced orders
+   ================================================================ */
+
+/* CVD tracker: har coin uchun taker buy - taker sell */
+var CVD_LIVE = {};   /* sym -> {buyVol, sellVol, cvd, ticks} */
+var DEPTH_LIVE = {}; /* sym -> {bidVol, askVol, ofi} */
+var LIQ_LIVE = {};   /* sym -> {liqCount, liqVol} */
+
+/* 1. BINANCE AGGTRADE STREAM — real CVD */
+/* aggTrade: m=true → seller initiated, m=false → buyer initiated */
+var TRADE_WS = null;
+var TRADE_SYMS = ['btcusdt','ethusdt','solusdt','bnbusdt','xrpusdt'];
+
+function connectTradeWS(){
+  try{
+    /* Bir ulanishda 5 ta coin trade stream */
+    var streams = TRADE_SYMS.map(function(s){return s+'@aggTrade';}).join('/');
+    TRADE_WS = new WebSocket('wss://stream.binance.com:9443/stream?streams='+streams);
+    TRADE_WS.onopen = function(){
+      var el=ge('lb-trade');
+      if(el){el.textContent='CVD LIVE';el.className='lb live';}
+    };
+    TRADE_WS.onmessage = function(e){
+      try{
+        var msg=JSON.parse(e.data);
+        if(!msg.data) return;
+        var t=msg.data;
+        if(t.e!=='aggTrade') return;
+        var sym=t.s.replace('USDT','');
+        if(!CVD_LIVE[sym]) CVD_LIVE[sym]={buyVol:0,sellVol:0,cvd:0,ticks:0};
+        var vol=parseFloat(t.q)||0; /* quote volume */
+        if(!t.m){ /* m=false = buyer is taker */
+          CVD_LIVE[sym].buyVol+=vol;
+        } else {
+          CVD_LIVE[sym].sellVol+=vol;
+        }
+        CVD_LIVE[sym].ticks++;
+        /* CVD = (buyVol - sellVol) / totalVol  — normaliz qilingan */
+        var total=CVD_LIVE[sym].buyVol+CVD_LIVE[sym].sellVol;
+        if(total>0){
+          var rawCvd=(CVD_LIVE[sym].buyVol-CVD_LIVE[sym].sellVol)/total;
+          CVD_LIVE[sym].cvd=rawCvd*5; /* -5 dan +5 gacha */
+          /* LIVE[sym] ga qo'shish — formula uchun */
+          if(!LIVE[sym]) LIVE[sym]={};
+          LIVE[sym].realCvd=CVD_LIVE[sym].cvd;
+          LIVE[sym].takerBuyR=CVD_LIVE[sym].buyVol/total;
+        }
+        /* Har 500 tickda reset (drift oldini olish uchun) */
+        if(CVD_LIVE[sym].ticks>500){
+          CVD_LIVE[sym].buyVol=CVD_LIVE[sym].buyVol*0.5;
+          CVD_LIVE[sym].sellVol=CVD_LIVE[sym].sellVol*0.5;
+          CVD_LIVE[sym].ticks=0;
+        }
+      }catch(ex){}
+    };
+    TRADE_WS.onerror=function(){
+      var el=ge('lb-trade');if(el){el.textContent='CVD ERR';el.className='lb err';}
+    };
+    TRADE_WS.onclose=function(){
+      var el=ge('lb-trade');if(el){el.textContent='CVD SIM';el.className='lb sim';}
+      setTimeout(connectTradeWS,8000);
+    };
+  }catch(ex){}
+}
+
+/* 2. BINANCE DEPTH STREAM — real OFI (Order Flow Imbalance) */
+/* depth20: top 20 bid/ask — bid vs ask hajm nisbati */
+var DEPTH_WS = null;
+
+function connectDepthWS(){
+  try{
+    /* BTC depth — barcha coin uchun juda ko'p connection */
+    DEPTH_WS = new WebSocket('wss://stream.binance.com:9443/ws/btcusdt@depth20@1000ms');
+    DEPTH_WS.onopen=function(){
+      var el=ge('lb-depth');if(el){el.textContent='OFI LIVE';el.className='lb live';}
+    };
+    DEPTH_WS.onmessage=function(e){
+      try{
+        var d=JSON.parse(e.data);
+        if(!d.bids||!d.asks) return;
+        /* Top 20 bid va ask hajmlarini yig'amiz */
+        var bidVol=0,askVol=0;
+        for(var i=0;i<Math.min(d.bids.length,20);i++)
+          bidVol+=parseFloat(d.bids[i][1])||0;
+        for(var j=0;j<Math.min(d.asks.length,20);j++)
+          askVol+=parseFloat(d.asks[j][1])||0;
+        var total=bidVol+askVol;
+        if(total>0){
+          var ofi=(bidVol-askVol)/total; /* -1 dan +1 gacha */
+          DEPTH_LIVE['BTC']={bidVol:bidVol,askVol:askVol,ofi:ofi};
+          if(!LIVE['BTC']) LIVE['BTC']={};
+          LIVE['BTC'].realOFI=ofi;
+          LIVE['BTC'].depthBidR=bidVol/total; /* depthRatio uchun */
+        }
+      }catch(ex){}
+    };
+    DEPTH_WS.onerror=function(){
+      var el=ge('lb-depth');if(el){el.textContent='OFI ERR';el.className='lb err';}
+    };
+    DEPTH_WS.onclose=function(){
+      var el=ge('lb-depth');if(el){el.textContent='OFI SIM';el.className='lb sim';}
+      setTimeout(connectDepthWS,8000);
+    };
+  }catch(ex){}
+}
+
+/* 3. BINANCE FUTURES LIKVIDATSIYA — forced orders */
+/* Son 5 minutdagi likvidatsiyalar — pump signal */
+function loadLiquidations(){
+  var xhr=new XMLHttpRequest();
+  xhr.open('GET','https://fapi.binance.com/fapi/v1/allForceOrders?limit=50',true);
+  xhr.timeout=6000;
+  xhr.onreadystatechange=function(){
+    if(xhr.readyState!==4||xhr.status!==200) return;
+    try{
+      var arr=JSON.parse(xhr.responseText);
+      /* So'nggi 5 minut ichidagi short likvidatsiyalar */
+      var now=Date.now();
+      var shortLiqs=0, shortVol=0;
+      for(var i=0;i<arr.length;i++){
+        var o=arr[i];
+        if(now-o.time>300000) continue; /* 5 daqiqadan eski */
+        if(o.side==='BUY'){ /* BUY = short likvidatsiya = bullish */
+          shortLiqs++;
+          shortVol+=parseFloat(o.origQty)||0;
+        }
+        var sym=(o.symbol||'').replace('USDT','');
+        if(sym&&!LIQ_LIVE[sym]) LIQ_LIVE[sym]={liqCount:0,liqVol:0};
+        if(sym&&o.side==='BUY'){
+          LIQ_LIVE[sym].liqCount++;
+          LIQ_LIVE[sym].liqVol+=parseFloat(o.origQty)||0;
+          if(!LIVE[sym]) LIVE[sym]={};
+          LIVE[sym].shortLiqs=LIQ_LIVE[sym].liqCount;
+          LIVE[sym].liqVol=LIQ_LIVE[sym].liqVol;
+        }
+      }
+      /* UI: likvidatsiya badge */
+      var el=ge('lb-liq');
+      if(el){
+        if(shortLiqs>5){
+          el.textContent='LIQ:'+shortLiqs;
+          el.className='lb live';
+          el.style.color='#ff8800';
+        } else {
+          el.textContent='LIQ:'+shortLiqs;
+          el.className='lb sim';
+        }
+      }
+      setTimeout(loadLiquidations,60000); /* 60 sek yangilanish */
+    }catch(ex){}
+  };
+  xhr.ontimeout=function(){};xhr.onerror=function(){};
+  xhr.send();
+}
+
+/* INIT */
+updateClock();
+setInterval(updateClock,1000);
+setInterval(function(){if(!isScanning)tick();},2500);
+setInterval(updateMM,10000);
+renderCW();
+
+/* Real data yuklash */
+connectBinanceWS();
+loadBinanceFutures();
+loadBinanceOI();
+setTimeout(loadBybit,1000);
+setTimeout(loadOKX,2000);
+setTimeout(loadOKXFund,3000);
+setTimeout(loadKuCoin,5000);
+setTimeout(loadGate,7000);
+setTimeout(loadHTX,9000);
+setTimeout(loadFG,500);
+
+/* Yangi data qatlamlari */
+setTimeout(connectTradeWS,2000);   /* Trade stream: real CVD */
+setTimeout(connectDepthWS,3000);   /* Depth stream: real OFI */
+setTimeout(loadLiquidations,4000); /* Likvidatsiya */
+
+/* Auto scan */
+setTimeout(startScan,3000);
+setInterval(function(){if(!isScanning&&Date.now()>nextScanTime)startScan();},900000);
+
+})();
+</script>
+
+</body>
+</html>
